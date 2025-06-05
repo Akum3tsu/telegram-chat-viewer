@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Version>0.1.16</Version>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>telegram_chat_viewer.ico</ApplicationIcon>
+    <AssemblyTitle>Telegram Chat Viewer</AssemblyTitle>
+    <AssemblyDescription>A high-performance desktop application for viewing Telegram chat exports</AssemblyDescription>
+    <AssemblyVersion>0.1.16</AssemblyVersion>
+    <FileVersion>0.1.16</FileVersion>
+    <Copyright>Copyright Â© 2024</Copyright>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PublishTrimmed>false</PublishTrimmed>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="System.Drawing.Common" Version="8.0.0" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="telegram_chat_viewer.ico" />
+  </ItemGroup>
+
+</Project> 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,182 @@
+{
+  "name": "Test Chat with Mentions",
+  "type": "personal_chat",
+  "id": 123456789,
+  "messages": [
+    {
+      "id": 1,
+      "type": "message",
+      "date": "2024-01-15T10:30:00",
+      "from": "Alice",
+      "text": [
+        {
+          "type": "mention",
+          "text": "@Bob"
+        },
+        " Hey there! How are you doing?"
+      ],
+      "text_entities": [
+        {
+          "type": "mention",
+          "text": "@Bob"
+        },
+        {
+          "type": "plain",
+          "text": " Hey there! How are you doing?"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "message",
+      "date": "2024-01-15T10:31:00",
+      "from": "Bob",
+      "text": [
+        "Hi ",
+        {
+          "type": "mention",
+          "text": "@Alice"
+        },
+        "! I'm doing great, thanks for asking. Check out this ",
+        {
+          "type": "hashtag",
+          "text": "#awesome"
+        },
+        " project I'm working on: ",
+        {
+          "type": "url",
+          "text": "https://example.com"
+        }
+      ],
+      "text_entities": [
+        {
+          "type": "plain",
+          "text": "Hi "
+        },
+        {
+          "type": "mention",
+          "text": "@Alice"
+        },
+        {
+          "type": "plain",
+          "text": "! I'm doing great, thanks for asking. Check out this "
+        },
+        {
+          "type": "hashtag",
+          "text": "#awesome"
+        },
+        {
+          "type": "plain",
+          "text": " project I'm working on: "
+        },
+        {
+          "type": "url",
+          "text": "https://example.com"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "message",
+      "date": "2024-01-15T10:32:00",
+      "from": "Alice",
+      "text": [
+        "That looks ",
+        {
+          "type": "bold",
+          "text": "amazing"
+        },
+        "! I especially like the ",
+        {
+          "type": "italic",
+          "text": "design"
+        },
+        " part. Here's some ",
+        {
+          "type": "code",
+          "text": "code example"
+        },
+        " for you."
+      ],
+      "text_entities": [
+        {
+          "type": "plain",
+          "text": "That looks "
+        },
+        {
+          "type": "bold",
+          "text": "amazing"
+        },
+        {
+          "type": "plain",
+          "text": "! I especially like the "
+        },
+        {
+          "type": "italic",
+          "text": "design"
+        },
+        {
+          "type": "plain",
+          "text": " part. Here's some "
+        },
+        {
+          "type": "code",
+          "text": "code example"
+        },
+        {
+          "type": "plain",
+          "text": " for you."
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "service",
+      "date": "2024-01-15T10:33:00",
+      "actor": "Charlie",
+      "action": "join_group_by_link",
+      "title": "Test Group"
+    },
+    {
+      "id": 5,
+      "type": "message",
+      "date": "2024-01-15T10:34:00",
+      "from": "Charlie",
+      "text": [
+        "Hello everyone! ",
+        {
+          "type": "mention",
+          "text": "@Alice"
+        },
+        " and ",
+        {
+          "type": "mention",
+          "text": "@Bob"
+        },
+        ", nice to meet you!"
+      ],
+      "text_entities": [
+        {
+          "type": "plain",
+          "text": "Hello everyone! "
+        },
+        {
+          "type": "mention",
+          "text": "@Alice"
+        },
+        {
+          "type": "plain",
+          "text": " and "
+        },
+        {
+          "type": "mention",
+          "text": "@Bob"
+        },
+        {
+          "type": "plain",
+          "text": ", nice to meet you!"
+        }
+      ]
+    }
+  ]
+} 

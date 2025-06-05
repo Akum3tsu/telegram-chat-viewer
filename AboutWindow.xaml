@@ -1,0 +1,145 @@
+<Window x:Class="TelegramChatViewer.AboutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="About Telegram Chat Viewer" 
+        Height="400" 
+        Width="500"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        Icon="telegram_chat_viewer.ico">
+    
+    <Window.Resources>
+        <!-- Dark theme colors (matching main window) -->
+        <SolidColorBrush x:Key="PrimaryBackground" Color="#17212B"/>
+        <SolidColorBrush x:Key="SecondaryBackground" Color="#242F3D"/>
+        <SolidColorBrush x:Key="AccentColor" Color="#5288C1"/>
+        <SolidColorBrush x:Key="PrimaryText" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="SecondaryText" Color="#8A95A5"/>
+        <SolidColorBrush x:Key="WelcomeText" Color="#E3E8F0"/>
+        
+        <!-- Modern button style -->
+        <Style x:Key="ModernButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource AccentColor}"/>
+            <Setter Property="Foreground" Value="{StaticResource PrimaryText}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#4A7BB7"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#3A6BA7"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Background="{StaticResource PrimaryBackground}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Main content -->
+        <StackPanel Grid.Row="0" 
+                   HorizontalAlignment="Center" 
+                   VerticalAlignment="Center"
+                   Margin="40">
+            
+            <!-- App icon and title -->
+            <Image Source="telegram_chat_viewer.ico" 
+                   Width="64" 
+                   Height="64" 
+                   Margin="0,0,0,20"/>
+            
+            <TextBlock Text="Telegram Chat Viewer"
+                       FontFamily="Segoe UI"
+                       FontSize="24"
+                       FontWeight="Bold"
+                       Foreground="{StaticResource WelcomeText}"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,10"/>
+            
+            <TextBlock x:Name="VersionLabel"
+                       Text="Version 2.1.0"
+                       FontFamily="Segoe UI"
+                       FontSize="14"
+                       Foreground="{StaticResource SecondaryText}"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,20"/>
+            
+            <!-- Description -->
+            <TextBlock Text="A high-performance desktop application for viewing Telegram chat exports"
+                       FontFamily="Segoe UI"
+                       FontSize="12"
+                       Foreground="{StaticResource SecondaryText}"
+                       HorizontalAlignment="Center"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap"
+                       Margin="0,0,0,30"/>
+            
+            <!-- Creator info -->
+            <StackPanel Orientation="Horizontal" 
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,10">
+                <TextBlock Text="Created by: "
+                           FontFamily="Segoe UI"
+                           FontSize="12"
+                           Foreground="{StaticResource SecondaryText}"/>
+                <TextBlock Text="Your Name"
+                           FontFamily="Segoe UI"
+                           FontSize="12"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource PrimaryText}"/>
+            </StackPanel>
+            
+            <!-- Website info -->
+            <StackPanel Orientation="Horizontal" 
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,10">
+                <TextBlock Text="Website: "
+                           FontFamily="Segoe UI"
+                           FontSize="12"
+                           Foreground="{StaticResource SecondaryText}"/>
+                <TextBlock Text="Coming Soon"
+                           FontFamily="Segoe UI"
+                           FontSize="12"
+                           FontStyle="Italic"
+                           Foreground="{StaticResource SecondaryText}"/>
+            </StackPanel>
+            
+            <!-- Copyright -->
+            <TextBlock Text="Copyright © 2024"
+                       FontFamily="Segoe UI"
+                       FontSize="11"
+                       Foreground="{StaticResource SecondaryText}"
+                       HorizontalAlignment="Center"
+                       Margin="0,20,0,0"/>
+        </StackPanel>
+
+        <!-- Close button -->
+        <Button Grid.Row="1"
+                Content="Close"
+                Style="{StaticResource ModernButtonStyle}"
+                HorizontalAlignment="Center"
+                Margin="0,0,0,20"
+                Padding="20,10"
+                Click="CloseButton_Click"/>
+    </Grid>
+</Window> 

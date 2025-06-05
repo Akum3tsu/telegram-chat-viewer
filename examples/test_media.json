@@ -1,0 +1,41 @@
+{
+  "name": "Test Media Chat",
+  "type": "personal_chat",
+  "id": 123456789,
+  "messages": [
+    {
+      "id": 1,
+      "type": "message",
+      "date": "2024-01-01T10:00:00",
+      "from": "Test User",
+      "text": "Here's a test image:",
+      "photo": "photos/test_image.jpg",
+      "width": 800,
+      "height": 600,
+      "file_size": 150000
+    },
+    {
+      "id": 2,
+      "type": "message", 
+      "date": "2024-01-01T10:01:00",
+      "from": "Test User",
+      "text": "And a video:",
+      "video_file": "videos/test_video.mp4",
+      "thumbnail": "videos/test_video_thumb.jpg",
+      "width": 1920,
+      "height": 1080,
+      "duration_seconds": 120,
+      "file_size": 5000000
+    },
+    {
+      "id": 3,
+      "type": "message",
+      "date": "2024-01-01T10:02:00", 
+      "from": "Test User",
+      "text": "Voice message:",
+      "voice_note": "voice/test_voice.ogg",
+      "duration_seconds": 15,
+      "file_size": 50000
+    }
+  ]
+} 

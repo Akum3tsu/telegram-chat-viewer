@@ -1,0 +1,195 @@
+{
+  "name": "Modern Features Test Chat",
+  "type": "personal_chat",
+  "id": 123456789,
+  "messages": [
+    {
+      "id": 223001,
+      "type": "message",
+      "date": "2022-06-21T15:00:00",
+      "date_unixtime": "1655816400",
+      "from": "Alice",
+      "text": [
+        "Hey everyone! Check out this cool website: ",
+        {
+          "type": "link",
+          "text": "https://www.example.com"
+        }
+      ],
+      "text_entities": [
+        {
+          "type": "plain",
+          "text": "Hey everyone! Check out this cool website: "
+        },
+        {
+          "type": "link",
+          "text": "https://www.example.com"
+        }
+      ]
+    },
+    {
+      "id": 223002,
+      "type": "message",
+      "date": "2022-06-21T15:01:00",
+      "date_unixtime": "1655816460",
+      "from": "Bob",
+      "text": "That's a great resource! Thanks for sharing.",
+      "text_entities": [
+        {
+          "type": "plain",
+          "text": "That's a great resource! Thanks for sharing."
+        }
+      ]
+    },
+    {
+      "id": 223003,
+      "type": "message",
+      "date": "2022-06-21T15:02:00",
+      "date_unixtime": "1655816520",
+      "from": "Charlie",
+      "reply_to_message_id": 223001,
+      "text": "I love this site too! Very helpful.",
+      "text_entities": [
+        {
+          "type": "plain",
+          "text": "I love this site too! Very helpful."
+        }
+      ]
+    },
+    {
+      "id": 223004,
+      "type": "message",
+      "date": "2022-06-21T15:03:00",
+      "date_unixtime": "1655816580",
+      "from": "Diana",
+      "forwarded_from": "Tech News Channel",
+      "file": "video_files/animation_157.gif.mp4",
+      "file_name": "animation.gif.mp4",
+      "file_size": 48588,
+      "thumbnail": "video_files/animation_157_thumb.jpg",
+      "thumbnail_file_size": 4348,
+      "media_type": "animation",
+      "mime_type": "video/mp4",
+      "duration_seconds": 4,
+      "width": 220,
+      "height": 122,
+      "text": "This animation is hilarious! 😂",
+      "text_entities": [
+        {
+          "type": "plain",
+          "text": "This animation is hilarious! 😂"
+        }
+      ]
+    },
+    {
+      "id": 223005,
+      "type": "message",
+      "date": "2022-06-21T15:04:00",
+      "date_unixtime": "1655816640",
+      "from": "Alice",
+      "reply_to_message_id": 223004,
+      "text": [
+        "Haha! That's amazing. ",
+        {
+          "type": "mention",
+          "text": "@Diana"
+        },
+        " where did you find this?"
+      ],
+      "text_entities": [
+        {
+          "type": "plain",
+          "text": "Haha! That's amazing. "
+        },
+        {
+          "type": "mention",
+          "text": "@Diana"
+        },
+        {
+          "type": "plain",
+          "text": " where did you find this?"
+        }
+      ]
+    },
+    {
+      "id": 223006,
+      "type": "message",
+      "date": "2022-06-21T15:05:00",
+      "date_unixtime": "1655816700",
+      "from": "Bob",
+      "reply_to_message_id": 223002,
+      "text": [
+        "Actually, I found an even better one: ",
+        {
+          "type": "url",
+          "text": "https://github.com/awesome/project"
+        }
+      ],
+      "text_entities": [
+        {
+          "type": "plain",
+          "text": "Actually, I found an even better one: "
+        },
+        {
+          "type": "url",
+          "text": "https://github.com/awesome/project"
+        }
+      ]
+    },
+    {
+      "id": 223007,
+      "type": "message",
+      "date": "2022-06-21T15:06:00",
+      "date_unixtime": "1655816760",
+      "from": "Charlie",
+      "file": "video_files/demo_video.mp4",
+      "file_name": "demo_video.mp4",
+      "file_size": 2456789,
+      "thumbnail": "video_files/demo_video_thumb.jpg",
+      "thumbnail_file_size": 15678,
+      "media_type": "video",
+      "mime_type": "video/mp4",
+      "duration_seconds": 45,
+      "width": 1920,
+      "height": 1080,
+      "text": "Here's a demo video of the new features!",
+      "text_entities": [
+        {
+          "type": "plain",
+          "text": "Here's a demo video of the new features!"
+        }
+      ]
+    },
+    {
+      "id": 223008,
+      "type": "message",
+      "date": "2022-06-21T15:07:00",
+      "date_unixtime": "1655816820",
+      "from": "Diana",
+      "reply_to_message_id": 223007,
+      "forwarded_from": "Alice",
+      "text": [
+        "This is perfect! Thanks ",
+        {
+          "type": "mention",
+          "text": "@Charlie"
+        },
+        " for the demo."
+      ],
+      "text_entities": [
+        {
+          "type": "plain",
+          "text": "This is perfect! Thanks "
+        },
+        {
+          "type": "mention",
+          "text": "@Charlie"
+        },
+        {
+          "type": "plain",
+          "text": " for the demo."
+        }
+      ]
+    }
+  ]
+} 

@@ -1,0 +1,88 @@
+{
+  "name": "Alternating Layout Test",
+  "type": "personal_chat",
+  "id": 123456789,
+  "messages": [
+    {
+      "id": 1,
+      "type": "message",
+      "date": "2024-12-01T10:00:00",
+      "from": "Alice",
+      "from_id": "user111",
+      "text": "Hey everyone! How's it going?",
+      "text_entities": []
+    },
+    {
+      "id": 2,
+      "type": "message", 
+      "date": "2024-12-01T10:01:00",
+      "from": "Alice",
+      "from_id": "user111",
+      "text": "I just wanted to share some news with you all",
+      "text_entities": []
+    },
+    {
+      "id": 3,
+      "type": "message",
+      "date": "2024-12-01T10:02:00",
+      "from": "Bob",
+      "from_id": "user222",
+      "text": "Oh hey Alice! What's the news?",
+      "text_entities": []
+    },
+    {
+      "id": 4,
+      "type": "message",
+      "date": "2024-12-01T10:03:00",
+      "from": "Alice",
+      "from_id": "user111",
+      "text": "I got the promotion at work! 🎉",
+      "text_entities": []
+    },
+    {
+      "id": 5,
+      "type": "message",
+      "date": "2024-12-01T10:04:00",
+      "from": "Bob",
+      "from_id": "user222",
+      "text": "That's amazing! Congratulations!",
+      "text_entities": []
+    },
+    {
+      "id": 6,
+      "type": "message",
+      "date": "2024-12-01T10:05:00",
+      "from": "Bob",
+      "from_id": "user222",
+      "text": "We should celebrate this weekend",
+      "text_entities": []
+    },
+    {
+      "id": 7,
+      "type": "message",
+      "date": "2024-12-01T10:06:00",
+      "from": "Charlie",
+      "from_id": "user333",
+      "text": "Woah, congrats Alice! 🥳",
+      "text_entities": []
+    },
+    {
+      "id": 8,
+      "type": "message",
+      "date": "2024-12-01T10:07:00",
+      "from": "Alice",
+      "from_id": "user111",
+      "text": "Thanks everyone! You're the best",
+      "text_entities": []
+    },
+    {
+      "id": 9,
+      "type": "message",
+      "date": "2024-12-01T10:08:00",
+      "from": "Bob",
+      "from_id": "user222",
+      "text": "So when are we celebrating? 🍾",
+      "text_entities": []
+    }
+  ]
+} 

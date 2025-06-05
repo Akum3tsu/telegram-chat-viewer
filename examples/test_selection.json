@@ -1,0 +1,74 @@
+{
+  "name": "Text Selection Test Chat",
+  "type": "personal_chat",
+  "id": 123456789,
+  "messages": [
+    {
+      "id": 1,
+      "type": "message",
+      "date": "2024-01-15T10:30:00",
+      "from": "Alice",
+      "text": "This is the first message that you should be able to select. Try clicking and dragging across multiple lines to see if the text selection works properly.",
+      "text_entities": [
+        {
+          "type": "plain",
+          "text": "This is the first message that you should be able to select. Try clicking and dragging across multiple lines to see if the text selection works properly."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "message",
+      "date": "2024-01-15T10:31:00",
+      "from": "Bob",
+      "text": [
+        "This is the second message with ",
+        {
+          "type": "bold",
+          "text": "bold text"
+        },
+        " and ",
+        {
+          "type": "mention",
+          "text": "@Alice"
+        },
+        " mentions. You should be able to select across this message and the previous one."
+      ],
+      "text_entities": [
+        {
+          "type": "plain",
+          "text": "This is the second message with "
+        },
+        {
+          "type": "bold",
+          "text": "bold text"
+        },
+        {
+          "type": "plain",
+          "text": " and "
+        },
+        {
+          "type": "mention",
+          "text": "@Alice"
+        },
+        {
+          "type": "plain",
+          "text": " mentions. You should be able to select across this message and the previous one."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "message",
+      "date": "2024-01-15T10:32:00",
+      "from": "Charlie",
+      "text": "Third message for testing multi-row selection. Try using Ctrl+A to select all text in a single message, or Ctrl+C to copy selected text to clipboard.",
+      "text_entities": [
+        {
+          "type": "plain",
+          "text": "Third message for testing multi-row selection. Try using Ctrl+A to select all text in a single message, or Ctrl+C to copy selected text to clipboard."
+        }
+      ]
+    }
+  ]
+} 

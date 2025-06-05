@@ -1,0 +1,594 @@
+<Window x:Class="TelegramChatViewer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Telegram Chat Viewer" 
+        Height="768" 
+        Width="1366"
+        MinHeight="600"
+        MinWidth="800"
+        WindowStartupLocation="CenterScreen"
+        Icon="telegram_chat_viewer.ico">
+    
+    <Window.Resources>
+        <!-- Light Theme (Telegram Default) -->
+        <SolidColorBrush x:Key="BackgroundBrush" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#F5F5F5"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#2AABEE"/>
+        <SolidColorBrush x:Key="TextBrush" Color="#333333"/>
+        <SolidColorBrush x:Key="SecondaryTextBrush" Color="#8C8C8C"/>
+        <SolidColorBrush x:Key="MessageIncomingBrush" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="MessageOutgoingBrush" Color="#E3F2FD"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="#E0E0E0"/>
+        <SolidColorBrush x:Key="HoverBrush" Color="#F0F0F0"/>
+
+        <!-- Dark Theme (Telegram Dark) -->
+        <SolidColorBrush x:Key="DarkBackgroundBrush" Color="#202020"/>
+        <SolidColorBrush x:Key="DarkSecondaryBackgroundBrush" Color="#2B2B2B"/>
+        <SolidColorBrush x:Key="DarkAccentBrush" Color="#2AABEE"/>
+        <SolidColorBrush x:Key="DarkTextBrush" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="DarkSecondaryTextBrush" Color="#B0B0B0"/>
+        <SolidColorBrush x:Key="DarkMessageIncomingBrush" Color="#3B3B3B"/>
+        <SolidColorBrush x:Key="DarkMessageOutgoingBrush" Color="#005C98"/>
+        <SolidColorBrush x:Key="DarkBorderBrush" Color="#404040"/>
+        <SolidColorBrush x:Key="DarkHoverBrush" Color="#353535"/>
+
+        <!-- Light theme colors (default) - Exact Telegram Light Theme -->
+        <SolidColorBrush x:Key="PrimaryBackground" Color="#DFEFD7"/>
+        <SolidColorBrush x:Key="SecondaryBackground" Color="#D6E8CE"/>
+        <SolidColorBrush x:Key="MessageInBackground" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="MessageOutBackground" Color="#DCEDD8"/>
+        <SolidColorBrush x:Key="ServiceBackground" Color="#E5F3DF"/>
+        <SolidColorBrush x:Key="ReplyBackground" Color="#F0F8EB"/>
+        <SolidColorBrush x:Key="PrimaryText" Color="#000000"/>
+        <SolidColorBrush x:Key="WelcomeText" Color="#2C5530"/>
+        <SolidColorBrush x:Key="WelcomeSecondary" Color="#708B75"/>
+
+        <!-- Alternating message backgrounds -->
+        <SolidColorBrush x:Key="MessageAltBackground1" Color="#E9F5E3"/>
+        <SolidColorBrush x:Key="MessageAltBackground2" Color="#D6E8CE"/>
+
+        <!-- Dark theme colors - Exact Telegram Dark Theme -->
+        <SolidColorBrush x:Key="DarkPrimaryBackground" Color="#0E1621"/>
+        <SolidColorBrush x:Key="DarkSecondaryBackground" Color="#17212B"/>
+        <SolidColorBrush x:Key="DarkMessageInBackground" Color="#1F2937"/>
+        <SolidColorBrush x:Key="DarkMessageOutBackground" Color="#2AABEE"/>
+        <SolidColorBrush x:Key="DarkServiceBackground" Color="#151E27"/>
+        <SolidColorBrush x:Key="DarkReplyBackground" Color="#1A252F"/>
+        <SolidColorBrush x:Key="DarkPrimaryText" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="DarkWelcomeText" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="DarkWelcomeSecondary" Color="#8696A0"/>
+
+        <!-- Dark alternating message backgrounds -->
+        <SolidColorBrush x:Key="DarkMessageAltBackground1" Color="#1A252F"/>
+        <SolidColorBrush x:Key="DarkMessageAltBackground2" Color="#243240"/>
+
+        <!-- Light theme button and menu colors -->
+        <SolidColorBrush x:Key="LightButtonBackground" Color="#2AABEE"/>
+        <SolidColorBrush x:Key="LightButtonHover" Color="#1E96D9"/>
+        <SolidColorBrush x:Key="LightButtonPressed" Color="#1882C4"/>
+        <SolidColorBrush x:Key="LightMenuBackground" Color="#DFEFD7"/>
+        <SolidColorBrush x:Key="LightMenuHover" Color="#D6E8CE"/>
+
+        <!-- Dark theme button and menu colors -->
+        <SolidColorBrush x:Key="DarkButtonBackground" Color="#2AABEE"/>
+        <SolidColorBrush x:Key="DarkButtonHover" Color="#1E96D9"/>
+        <SolidColorBrush x:Key="DarkButtonPressed" Color="#1882C4"/>
+        <SolidColorBrush x:Key="DarkMenuBackground" Color="#0E1621"/>
+        <SolidColorBrush x:Key="DarkMenuHover" Color="#17212B"/>
+
+        <!-- Shadow Effect for loading dialog -->
+        <DropShadowEffect x:Key="ShadowEffect" 
+                          Color="Black" 
+                          Direction="270" 
+                          ShadowDepth="3" 
+                          BlurRadius="8" 
+                          Opacity="0.3"/>
+
+        <!-- Modern button style -->
+        <Style x:Key="ModernButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{StaticResource LightButtonHover}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="{StaticResource LightButtonPressed}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Background" Value="{StaticResource SecondaryTextBrush}"/>
+                                <Setter Property="Foreground" Value="{StaticResource SecondaryBackgroundBrush}"/>
+                                <Setter Property="Cursor" Value="Arrow"/>
+                                <Setter Property="Opacity" Value="0.6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Compact button style for small spaces -->
+        <Style x:Key="CompactButtonStyle" TargetType="Button" BasedOn="{StaticResource ModernButtonStyle}">
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+
+        <!-- Modern TextBox style -->
+        <Style x:Key="ModernTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Background" Value="{StaticResource PrimaryBackground}"/>
+            <Setter Property="Foreground" Value="{StaticResource PrimaryText}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource SecondaryTextBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ScrollViewer x:Name="PART_ContentHost"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Modern Menu Styling -->
+        <Style TargetType="Menu">
+            <Setter Property="Background" Value="{StaticResource PrimaryBackground}"/>
+            <Setter Property="Foreground" Value="{StaticResource PrimaryText}"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="Padding" Value="8,6"/>
+        </Style>
+        
+        <Style TargetType="MenuItem">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Margin" Value="2,1"/>
+            <Setter Property="Background" Value="{StaticResource PrimaryBackground}"/>
+            <Setter Property="Foreground" Value="{StaticResource PrimaryText}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="MenuItem">
+                        <Border x:Name="Border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" SharedSizeGroup="MenuItemIconColumnGroup"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto" SharedSizeGroup="MenuItemIGTColumnGroup"/>
+                                    <ColumnDefinition Width="Auto" SharedSizeGroup="MenuItemShortcutColumnGroup"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Icon -->
+                                <ContentPresenter x:Name="Icon"
+                                                Grid.Column="0"
+                                                ContentSource="Icon"
+                                                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                                VerticalAlignment="Center"
+                                                Margin="0,0,8,0"/>
+
+                                <!-- Checkmark for checkable items -->
+                                <TextBlock x:Name="CheckMark"
+                                         Grid.Column="0"
+                                         Text="✓"
+                                         FontSize="12"
+                                         FontWeight="Bold"
+                                         Foreground="{StaticResource AccentBrush}"
+                                         VerticalAlignment="Center"
+                                         Margin="0,0,8,0"
+                                         Visibility="Collapsed"/>
+
+                                <!-- Header text -->
+                                <ContentPresenter x:Name="HeaderHost"
+                                                Grid.Column="1"
+                                                ContentSource="Header"
+                                                RecognizesAccessKey="True"
+                                                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                                VerticalAlignment="Center"/>
+
+                                <!-- Submenu arrow -->
+                                <TextBlock x:Name="ArrowGlyph"
+                                         Grid.Column="3"
+                                         Text="▶"
+                                         FontSize="10"
+                                         Foreground="{TemplateBinding Foreground}"
+                                         VerticalAlignment="Center"
+                                         Margin="8,0,0,0"
+                                         Visibility="Collapsed"/>
+
+                                <!-- Submenu popup -->
+                                <Popup x:Name="PART_Popup"
+                                     AllowsTransparency="True"
+                                     Focusable="False"
+                                     IsOpen="{TemplateBinding IsSubmenuOpen}"
+                                     Placement="Bottom"
+                                     PopupAnimation="Fade">
+                                    <Border x:Name="SubmenuBorder"
+                                            Background="{StaticResource PrimaryBackground}"
+                                            BorderBrush="{StaticResource SecondaryTextBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="8"
+                                            Padding="4">
+                                        <ScrollViewer x:Name="SubMenuScrollViewer">
+                                            <Grid RenderOptions.ClearTypeHint="Enabled">
+                                                <Canvas HorizontalAlignment="Left"
+                                                      Height="0"
+                                                      VerticalAlignment="Top"
+                                                      Width="0">
+                                                    <Rectangle x:Name="OpaqueRect"
+                                                             Fill="{Binding Background, ElementName=SubmenuBorder}"
+                                                             Height="{Binding ActualHeight, ElementName=SubmenuBorder}"
+                                                             Width="{Binding ActualWidth, ElementName=SubmenuBorder}"/>
+                                                </Canvas>
+                                                <ItemsPresenter x:Name="ItemsPresenter"
+                                                              KeyboardNavigation.DirectionalNavigation="Cycle"
+                                                              Grid.IsSharedSizeScope="True"
+                                                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                                              KeyboardNavigation.TabNavigation="Cycle"/>
+                                            </Grid>
+                                        </ScrollViewer>
+                                    </Border>
+                                </Popup>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <!-- Top level menu item -->
+                            <Trigger Property="Role" Value="TopLevelHeader">
+                                <Setter Property="Padding" Value="12,8"/>
+                                <Setter TargetName="PART_Popup" Property="Placement" Value="Bottom"/>
+                                <Setter TargetName="ArrowGlyph" Property="Visibility" Value="Collapsed"/>
+                            </Trigger>
+
+                            <!-- Submenu header -->
+                            <Trigger Property="Role" Value="SubmenuHeader">
+                                <Setter TargetName="ArrowGlyph" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="PART_Popup" Property="Placement" Value="Right"/>
+                            </Trigger>
+
+                            <!-- Checkable item -->
+                            <Trigger Property="IsCheckable" Value="True">
+                                <Setter TargetName="Icon" Property="Visibility" Value="Collapsed"/>
+                            </Trigger>
+
+                            <!-- Checked state -->
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+
+                            <!-- Highlighted state -->
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="{StaticResource AccentBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter TargetName="CheckMark" Property="Foreground" Value="White"/>
+                            </Trigger>
+
+                            <!-- Enabled/Disabled state -->
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
+                                <Setter Property="Opacity" Value="0.6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Modern Separator Style -->
+        <Style TargetType="Separator">
+            <Setter Property="Background" Value="{StaticResource SecondaryTextBrush}"/>
+            <Setter Property="Height" Value="1"/>
+            <Setter Property="Margin" Value="8,4"/>
+            <Setter Property="Opacity" Value="0.3"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Separator">
+                        <Border Background="{TemplateBinding Background}"
+                                Height="{TemplateBinding Height}"
+                                CornerRadius="0.5"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Background="{StaticResource PrimaryBackground}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Menu Bar -->
+        <Menu Grid.Row="0">
+            <MenuItem Header="_View">
+                <MenuItem x:Name="AlternatingLayoutMenuItem"
+                          Header="_Alternating Message Layout"
+                          IsCheckable="True"
+                          IsChecked="True"
+                          Click="AlternatingLayoutMenuItem_Click"/>
+                <Separator/>
+                <MenuItem x:Name="LightModeMenuItem"
+                          Header="Light _Mode"
+                          IsCheckable="True"
+                          IsChecked="True"
+                          Click="LightModeMenuItem_Click"/>
+
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem x:Name="OpenLogMenuItem"
+                          Header="Open _Log Directory"
+                          Click="OpenLogMenuItem_Click"/>
+                <Separator/>
+                <MenuItem x:Name="AboutMenuItem"
+                          Header="_About"
+                          Click="AboutMenuItem_Click"/>
+            </MenuItem>
+        </Menu>
+
+        <!-- Header -->
+        <Border Grid.Row="1" 
+                Background="{StaticResource SecondaryBackgroundBrush}" 
+                Padding="15,10"
+                BorderBrush="{StaticResource SecondaryTextBrush}"
+                BorderThickness="0,0,0,1">
+            <Grid x:Name="HeaderGrid">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" MinWidth="200"/>
+                    <ColumnDefinition Width="Auto" MinWidth="300"/>
+                    <ColumnDefinition Width="Auto" MinWidth="150"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Left side - Title and status -->
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock x:Name="StatusLabel"
+                               Text=""
+                               FontFamily="Segoe UI"
+                               FontSize="20"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource PrimaryText}"/>
+                    <TextBlock x:Name="ProgressLabel"
+                               Text=""
+                               FontFamily="Segoe UI"
+                               FontSize="14"
+                               FontWeight="Normal"
+                               Foreground="{StaticResource SecondaryTextBrush}"
+                               Margin="0,2,0,0"
+                               Visibility="Collapsed"/>
+                </StackPanel>
+
+                <!-- Center - Search -->
+                <StackPanel Grid.Column="1" 
+                           VerticalAlignment="Center" 
+                           Margin="10,0">
+                    <TextBlock Text="🔍 Search:"
+                               FontFamily="Segoe UI"
+                               FontSize="12"
+                               Foreground="{StaticResource PrimaryText}"
+                               Margin="0,0,0,4"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" MinWidth="120" MaxWidth="180"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="SearchTextBox"
+                                 Grid.Column="0"
+                                 Style="{StaticResource ModernTextBoxStyle}"
+                                 Background="White"
+                                 Height="30"
+                                 TextChanged="SearchTextBox_TextChanged"
+                                 KeyDown="SearchTextBox_KeyDown"/>
+                        <Button x:Name="SearchButton"
+                                Grid.Column="1"
+                                Content="Search"
+                                Style="{StaticResource CompactButtonStyle}"
+                                Height="30"
+                                Margin="5,0,0,0"
+                                Click="SearchButton_Click"/>
+                        <Button x:Name="ClearSearchButton"
+                                Grid.Column="2"
+                                Content="Clear"
+                                Style="{StaticResource CompactButtonStyle}"
+                                Height="30"
+                                Margin="5,0,0,0"
+                                IsEnabled="False"
+                                Click="ClearSearchButton_Click"/>
+                    </Grid>
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                        <TextBlock x:Name="SearchResultsLabel"
+                                   Text=""
+                                   FontFamily="Segoe UI"
+                                   FontSize="10"
+                                   Foreground="{StaticResource WelcomeSecondary}"
+                                   VerticalAlignment="Center"
+                                   MinWidth="80"/>
+                        <Button x:Name="PrevSearchButton"
+                                Content="◀"
+                                Style="{StaticResource CompactButtonStyle}"
+                                FontSize="10"
+                                Padding="6,4"
+                                Margin="5,0,0,0"
+                                Visibility="Collapsed"
+                                ToolTip="Previous result (Shift+F3)"
+                                Click="PrevSearchButton_Click"/>
+                        <Button x:Name="NextSearchButton"
+                                Content="▶"
+                                Style="{StaticResource CompactButtonStyle}"
+                                FontSize="10"
+                                Padding="6,4"
+                                Margin="2,0,0,0"
+                                Visibility="Collapsed"
+                                ToolTip="Next result (F3)"
+                                Click="NextSearchButton_Click"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Right side - Load button -->
+                <Button x:Name="LoadButton"
+                        Grid.Column="2"
+                        Content="📁 Load"
+                        Style="{StaticResource ModernButtonStyle}"
+                        Height="30"
+                        FontSize="11"
+                        Margin="10,0,0,0"
+                        Click="LoadButton_Click"/>
+            </Grid>
+        </Border>
+
+        <!-- Main content area -->
+        <Grid Grid.Row="2">
+            <!-- Welcome screen -->
+            <Border x:Name="WelcomePanel"
+                    Background="{StaticResource SecondaryBackgroundBrush}"
+                    Visibility="Visible">
+                <StackPanel HorizontalAlignment="Center" 
+                           VerticalAlignment="Center"
+                           MaxWidth="600">
+                    <TextBlock Text="🚀 Telegram Chat Viewer"
+                               FontFamily="Segoe UI"
+                               FontSize="28"
+                               FontWeight="Bold"
+                               Foreground="Black"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,30"/>
+                    
+                    <TextBlock TextWrapping="Wrap"
+                               FontFamily="Segoe UI"
+                               FontSize="14"
+                               Foreground="{StaticResource PrimaryText}"
+                               HorizontalAlignment="Center"
+                               TextAlignment="Center"
+                               LineHeight="22"
+                               Margin="0,0,0,30">
+                        <Run Text="Click 'Load' to load your Telegram chat JSON file."/>
+                        <LineBreak/><LineBreak/>
+                        <Run Text="Features:" FontWeight="SemiBold"/>
+                        <LineBreak/>
+                        <Run Text="• High-performance native Windows application"/>
+                        <LineBreak/>
+                        <Run Text="• Smooth virtual scrolling for extremely large files"/>
+                        <LineBreak/>
+                        <Run Text="• Perfect infinite scroll (mouse wheel + scrollbar)"/>
+                        <LineBreak/>
+                        <Run Text="• Real-time search functionality"/>
+                        <LineBreak/>
+                        <Run Text="• Telegram-like appearance with rich text formatting"/>
+                        <LineBreak/>
+                        <Run Text="• Media support with thumbnails"/>
+                        <LineBreak/>
+                        <Run Text="• Optimized memory management"/>
+                        <LineBreak/><LineBreak/>
+                        <Run Text="Ready to load your chat export!" FontWeight="SemiBold"/>
+                    </TextBlock>
+
+
+                </StackPanel>
+            </Border>
+
+            <!-- Chat area -->
+            <Border x:Name="ChatPanel"
+                    Background="{StaticResource SecondaryBackgroundBrush}"
+                    Visibility="Collapsed">
+                <Grid>
+                    <ScrollViewer x:Name="ChatScrollViewer"
+                                 VerticalScrollBarVisibility="Auto"
+                                 HorizontalScrollBarVisibility="Disabled"
+                                 PanningMode="VerticalOnly"
+                                 CanContentScroll="False">
+                        <StackPanel x:Name="MessagesContainer"
+                                   Margin="10"/>
+                    </ScrollViewer>
+                    
+                    <!-- Infinite scroll loading indicator -->
+                    <Border x:Name="InfiniteScrollLoader"
+                            Background="#E0FFFFFF"
+                            BorderBrush="#CCCCCC"
+                            BorderThickness="1"
+                            CornerRadius="20"
+                            Padding="12,8"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Bottom"
+                            Margin="20"
+                            Visibility="Collapsed"
+                            Effect="{StaticResource ShadowEffect}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="⏳"
+                                       FontSize="14"
+                                       Margin="0,0,8,0"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Text="Loading more messages..."
+                                       FontFamily="Segoe UI"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="Black"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- Loading overlay -->
+            <Border x:Name="LoadingOverlay"
+                    Background="#CC000000"
+                    Visibility="Collapsed">
+                <Border Background="White"
+                        CornerRadius="10"
+                        Padding="40,30"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Effect="{StaticResource ShadowEffect}">
+                    <StackPanel>
+                        <ProgressBar x:Name="LoadingProgressBar"
+                                    Width="300"
+                                    Height="8"
+                                    Background="#E0E0E0"
+                                    Foreground="{StaticResource AccentBrush}"
+                                    Margin="0,0,0,20"/>
+                        <TextBlock x:Name="LoadingStatusText"
+                                   Text="Loading..."
+                                   FontFamily="Segoe UI"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Foreground="Black"
+                                   HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </Border>
+        </Grid>
+    </Grid>
+</Window> 

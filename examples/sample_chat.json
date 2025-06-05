@@ -1,0 +1,154 @@
+{
+  "name": "Sample Group Chat",
+  "type": "private_supergroup",
+  "id": 1320864439,
+  "messages": [
+    {
+      "id": -999974196,
+      "type": "service",
+      "date": "2016-04-28T11:24:02",
+      "date_unixtime": "1461835442",
+      "actor": "John Doe",
+      "actor_id": "user137461023",
+      "action": "create_group",
+      "title": "Sample Group Chat",
+      "members": [
+        "John Doe",
+        "Jane Smith",
+        "Bob Wilson",
+        "Alice Brown",
+        "Charlie Davis"
+      ],
+      "text": "",
+      "text_entities": []
+    },
+    {
+      "id": -999974195,
+      "type": "message",
+      "date": "2016-04-28T11:24:08",
+      "date_unixtime": "1461835448",
+      "from": "John Doe",
+      "from_id": "user137461023",
+      "text": "Welcome everyone to our new group!",
+      "text_entities": [
+        {
+          "type": "plain",
+          "text": "Welcome everyone to our new group!"
+        }
+      ]
+    },
+    {
+      "id": -999974194,
+      "type": "service",
+      "date": "2016-04-28T11:25:15",
+      "date_unixtime": "1461835515",
+      "actor": "Jane Smith",
+      "actor_id": "user987654321",
+      "action": "join_group_by_link",
+      "text": "",
+      "text_entities": []
+    },
+    {
+      "id": -999974193,
+      "type": "message",
+      "date": "2016-04-28T11:25:30",
+      "date_unixtime": "1461835530",
+      "from": "Jane Smith",
+      "from_id": "user987654321",
+      "text": "Hi everyone! Thanks for adding me to the group.",
+      "text_entities": [
+        {
+          "type": "plain",
+          "text": "Hi everyone! Thanks for adding me to the group."
+        }
+      ]
+    },
+    {
+      "id": -999974192,
+      "type": "message",
+      "date": "2016-04-28T11:26:02",
+      "date_unixtime": "1461835562",
+      "from": "Bob Wilson",
+      "from_id": "user456789012",
+      "text": "Great to have you here, Jane! This group will be perfect for our project discussions.",
+      "text_entities": [
+        {
+          "type": "plain",
+          "text": "Great to have you here, Jane! This group will be perfect for our project discussions."
+        }
+      ]
+    },
+    {
+      "id": -999974191,
+      "type": "service",
+      "date": "2016-04-28T14:30:45",
+      "date_unixtime": "1461846645",
+      "actor": "John Doe",
+      "actor_id": "user137461023",
+      "action": "invite_members",
+      "members": [
+        "Mike Johnson",
+        "Sarah Lee"
+      ],
+      "text": "",
+      "text_entities": []
+    },
+    {
+      "id": -999974190,
+      "type": "message",
+      "date": "2016-04-28T14:31:20",
+      "date_unixtime": "1461846680",
+      "from": "Mike Johnson",
+      "from_id": "user789012345",
+      "text": "Thanks for adding me! Looking forward to working with everyone.",
+      "text_entities": [
+        {
+          "type": "plain",
+          "text": "Thanks for adding me! Looking forward to working with everyone."
+        }
+      ]
+    },
+    {
+      "id": -999974189,
+      "type": "service",
+      "date": "2016-04-29T09:15:20",
+      "date_unixtime": "1461913320",
+      "actor": "Alice Brown",
+      "actor_id": "user345678901",
+      "action": "edit_group_title",
+      "title": "Project Team Chat",
+      "text": "",
+      "text_entities": []
+    },
+    {
+      "id": -999974188,
+      "type": "message",
+      "date": "2016-04-29T09:16:05",
+      "date_unixtime": "1461913365",
+      "from": "Alice Brown",
+      "from_id": "user345678901",
+      "text": "I changed the group name to better reflect our purpose. Hope that's okay with everyone!",
+      "text_entities": [
+        {
+          "type": "plain",
+          "text": "I changed the group name to better reflect our purpose. Hope that's okay with everyone!"
+        }
+      ]
+    },
+    {
+      "id": -999974187,
+      "type": "message",
+      "date": "2016-04-29T09:17:30",
+      "date_unixtime": "1461913450",
+      "from": "You",
+      "from_id": "user111222333",
+      "text": "Perfect! That name makes much more sense. When should we schedule our first meeting?",
+      "text_entities": [
+        {
+          "type": "plain",
+          "text": "Perfect! That name makes much more sense. When should we schedule our first meeting?"
+        }
+      ]
+    }
+  ]
+} 

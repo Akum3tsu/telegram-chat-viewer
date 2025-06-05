@@ -1,0 +1,85 @@
+{
+  "name": "Sticker Test Chat",
+  "type": "personal_chat",
+  "id": 123456789,
+  "messages": [
+    {
+      "id": 86194,
+      "type": "message",
+      "date": "2020-02-14T20:15:58",
+      "date_unixtime": "1581707758",
+      "from": "User",
+      "from_id": "user142419147",
+      "file": "stickers/sticker (507).webp",
+      "file_name": "sticker.webp",
+      "file_size": 18578,
+      "thumbnail": "stickers/sticker (507).webp_thumb.jpg",
+      "thumbnail_file_size": 3140,
+      "media_type": "sticker",
+      "sticker_emoji": "😢",
+      "mime_type": "image/webp",
+      "width": 512,
+      "height": 409,
+      "text": "",
+      "text_entities": []
+    },
+    {
+      "id": 86195,
+      "type": "message",
+      "date": "2020-02-14T20:16:30",
+      "from": "Friend",
+      "file": "stickers/happy_sticker.webp",
+      "file_name": "happy_sticker.webp",
+      "file_size": 15234,
+      "media_type": "sticker",
+      "sticker_emoji": "😊",
+      "mime_type": "image/webp",
+      "width": 512,
+      "height": 512,
+      "text": "",
+      "text_entities": []
+    },
+    {
+      "id": 86196,
+      "type": "message",
+      "date": "2020-02-14T20:17:00",
+      "from": "User",
+      "text": "These stickers are great!",
+      "text_entities": [
+        {
+          "type": "plain",
+          "text": "These stickers are great!"
+        }
+      ]
+    },
+    {
+      "id": 86197,
+      "type": "message",
+      "date": "2020-02-14T20:17:30",
+      "from": "Friend",
+      "sticker": "stickers/legacy_sticker.webp",
+      "sticker_file_size": 12000,
+      "sticker_emoji": "👍",
+      "width": 256,
+      "height": 256,
+      "text": "",
+      "text_entities": []
+    },
+    {
+      "id": 86198,
+      "type": "message",
+      "date": "2020-02-14T20:18:00",
+      "from": "User",
+      "file": "stickers/animated_sticker.tgs",
+      "file_name": "animated_sticker.tgs",
+      "file_size": 25000,
+      "media_type": "sticker",
+      "sticker_emoji": "🎉",
+      "mime_type": "application/x-tgsticker",
+      "width": 512,
+      "height": 512,
+      "text": "",
+      "text_entities": []
+    }
+  ]
+} 

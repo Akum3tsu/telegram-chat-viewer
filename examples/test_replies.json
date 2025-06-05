@@ -1,0 +1,176 @@
+{
+  "name": "Test Chat with Replies",
+  "type": "personal_chat",
+  "id": 123456789,
+  "messages": [
+    {
+      "id": 1,
+      "type": "message",
+      "date": "2024-01-15T10:30:00",
+      "from": "Alice",
+      "text": "Hey everyone! How's the project going?",
+      "text_entities": [
+        {
+          "type": "plain",
+          "text": "Hey everyone! How's the project going?"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "message",
+      "date": "2024-01-15T10:31:00",
+      "from": "Bob",
+      "reply_to_message_id": 1,
+      "text": "It's going great! We just finished the main features.",
+      "text_entities": [
+        {
+          "type": "plain",
+          "text": "It's going great! We just finished the main features."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "message",
+      "date": "2024-01-15T10:32:00",
+      "from": "Charlie",
+      "text": [
+        "Check out this ",
+        {
+          "type": "hashtag",
+          "text": "#awesome"
+        },
+        " feature we added: ",
+        {
+          "type": "url",
+          "text": "https://example.com"
+        }
+      ],
+      "text_entities": [
+        {
+          "type": "plain",
+          "text": "Check out this "
+        },
+        {
+          "type": "hashtag",
+          "text": "#awesome"
+        },
+        {
+          "type": "plain",
+          "text": " feature we added: "
+        },
+        {
+          "type": "url",
+          "text": "https://example.com"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "message",
+      "date": "2024-01-15T10:33:00",
+      "from": "Alice",
+      "reply_to_message_id": 3,
+      "text": [
+        "That looks ",
+        {
+          "type": "bold",
+          "text": "amazing"
+        },
+        "! ",
+        {
+          "type": "mention",
+          "text": "@Charlie"
+        },
+        " great work!"
+      ],
+      "text_entities": [
+        {
+          "type": "plain",
+          "text": "That looks "
+        },
+        {
+          "type": "bold",
+          "text": "amazing"
+        },
+        {
+          "type": "plain",
+          "text": "! "
+        },
+        {
+          "type": "mention",
+          "text": "@Charlie"
+        },
+        {
+          "type": "plain",
+          "text": " great work!"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "service",
+      "date": "2024-01-15T10:34:00",
+      "actor": "Diana",
+      "action": "join_group_by_link",
+      "title": "Test Group"
+    },
+    {
+      "id": 6,
+      "type": "message",
+      "date": "2024-01-15T10:35:00",
+      "from": "Bob",
+      "reply_to_message_id": 5,
+      "text": "Welcome to the team!",
+      "text_entities": [
+        {
+          "type": "plain",
+          "text": "Welcome to the team!"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "message",
+      "date": "2024-01-15T10:36:00",
+      "from": "Diana",
+      "text": "Thanks! Excited to be here.",
+      "text_entities": [
+        {
+          "type": "plain",
+          "text": "Thanks! Excited to be here."
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "message",
+      "date": "2024-01-15T10:37:00",
+      "from": "Charlie",
+      "reply_to_message_id": 2,
+      "text": [
+        "Yes, and we also added ",
+        {
+          "type": "italic",
+          "text": "reply functionality"
+        },
+        " to the chat viewer!"
+      ],
+      "text_entities": [
+        {
+          "type": "plain",
+          "text": "Yes, and we also added "
+        },
+        {
+          "type": "italic",
+          "text": "reply functionality"
+        },
+        {
+          "type": "plain",
+          "text": " to the chat viewer!"
+        }
+      ]
+    }
+  ]
+} 
