@@ -96,7 +96,6 @@ jobs:
           -p:PublishSingleFile=true `
           -p:EnableCompressionInSingleFile=true `
           -p:PublishTrimmed=false `
-          -p:PublishReadyToRun=true `
           --no-restore
       working-directory: ${{ env.Project_Directory }}
 
