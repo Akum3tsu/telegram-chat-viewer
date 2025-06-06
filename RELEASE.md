@@ -45,7 +45,7 @@ The project uses GitHub Actions to automatically build and create releases when 
 3. **Create and push the tag**:
    ```bash
    git tag -a v1.2.0 -m "Release v1.2.0"
-   git push origin master
+   git push origin main
    git push origin v1.2.0
    ```
 
@@ -88,7 +88,7 @@ Each release includes:
 The workflow is defined in `.github/workflows/dotnet-desktop.yml` and:
 
 ### **Triggers On**
-- Push to `master` or `main` branches (builds but doesn't release)
+- Push to `main` branch (builds but doesn't release)
 - Push tags starting with `v` (creates release)
 - Pull requests (builds and tests)
 

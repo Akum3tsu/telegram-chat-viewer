@@ -51,7 +51,7 @@ git tag -a $Version -m "Release $Version"
 
 if ($Push) {
     Write-Host "Pushing to GitHub..." -ForegroundColor Yellow
-    git push origin master
+    git push origin main
     git push origin $Version
     
     Write-Host "✅ Release $Version has been pushed to GitHub!" -ForegroundColor Green
@@ -59,7 +59,7 @@ if ($Push) {
     Write-Host "Check: https://github.com/Akum3tsu/telegram-chat-viewer/actions" -ForegroundColor Cyan
 } else {
     Write-Host "Tag created locally. To push to GitHub, run:" -ForegroundColor Cyan
-    Write-Host "  git push origin master" -ForegroundColor White
+    Write-Host "  git push origin main" -ForegroundColor White
     Write-Host "  git push origin $Version" -ForegroundColor White
     Write-Host ""
     Write-Host "Or run this script again with -Push parameter:" -ForegroundColor Cyan
