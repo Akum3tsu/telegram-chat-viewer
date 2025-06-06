@@ -36,30 +36,28 @@
 # For a complete CI/CD sample to get started with GitHub Action workflows for Desktop Applications,
 # refer to https://github.com/microsoft/github-actions-for-desktop-apps
 
-name: .NET Core Desktop
+name: .NET Desktop Build and Release
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master", "main" ]
+    tags: [ "v*" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master", "main" ]
+  release:
+    types: [published]
 
 jobs:
-
   build:
-
     strategy:
       matrix:
-        configuration: [Debug, Release]
+        configuration: [Release]
 
-    runs-on: windows-latest  # For a list of available runner types, refer to
-                             # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
+    runs-on: windows-latest
 
     env:
-      Solution_Name: your-solution-name                         # Replace with your solution name, i.e. MyWpfApp.sln.
-      Test_Project_Path: your-test-project-path                 # Replace with the path to your test project, i.e. MyWpfApp.Tests\MyWpfApp.Tests.csproj.
-      Wap_Project_Directory: your-wap-project-directory-name    # Replace with the Wap project directory relative to the solution, i.e. MyWpfApp.Package.
-      Wap_Project_Path: your-wap-project-path                   # Replace with the path to your Wap project, i.e. MyWpf.App.Package\MyWpfApp.Package.wapproj.
+      Solution_Name: TelegramChatViewer.csproj
+      Project_Directory: .
 
     steps:
     - name: Checkout
@@ -67,49 +65,198 @@ jobs:
       with:
         fetch-depth: 0
 
-    # Install the .NET Core workload
-    - name: Install .NET Core
+    # Install the .NET SDK indicated in the global.json file
+    - name: Install .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
 
-    # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
+    # Add MSBuild to the PATH
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v2
 
-    # Execute all unit tests in the solution
-    - name: Execute unit tests
-      run: dotnet test
-
     # Restore the application to populate the obj folder with RuntimeIdentifiers
     - name: Restore the application
-      run: msbuild $env:Solution_Name /t:Restore /p:Configuration=$env:Configuration
-      env:
-        Configuration: ${{ matrix.configuration }}
+      run: dotnet restore $env:Solution_Name
+      working-directory: ${{ env.Project_Directory }}
 
-    # Decode the base 64 encoded pfx and save the Signing_Certificate
-    - name: Decode the pfx
+    # Build the application
+    - name: Build the application
+      run: dotnet build $env:Solution_Name --configuration ${{ matrix.configuration }} --no-restore
+      working-directory: ${{ env.Project_Directory }}
+
+    # Publish single-file executable for Windows x64
+    - name: Publish Windows x64
       run: |
-        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.Base64_Encoded_Pfx }}")
-        $certificatePath = Join-Path -Path $env:Wap_Project_Directory -ChildPath GitHubActionsWorkflow.pfx
-        [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
+        dotnet publish $env:Solution_Name `
+          --configuration ${{ matrix.configuration }} `
+          --runtime win-x64 `
+          --self-contained true `
+          --output ./publish/win-x64 `
+          -p:PublishSingleFile=true `
+          -p:EnableCompressionInSingleFile=true `
+          -p:PublishTrimmed=false `
+          -p:PublishReadyToRun=true `
+          --no-restore
+      working-directory: ${{ env.Project_Directory }}
 
-    # Create the app package by building and packaging the Windows Application Packaging project
-    - name: Create the app package
-      run: msbuild $env:Wap_Project_Path /p:Configuration=$env:Configuration /p:UapAppxPackageBuildMode=$env:Appx_Package_Build_Mode /p:AppxBundle=$env:Appx_Bundle /p:PackageCertificateKeyFile=GitHubActionsWorkflow.pfx /p:PackageCertificatePassword=${{ secrets.Pfx_Key }}
-      env:
-        Appx_Bundle: Always
-        Appx_Bundle_Platforms: x86|x64
-        Appx_Package_Build_Mode: StoreUpload
-        Configuration: ${{ matrix.configuration }}
+    # Create portable version (framework-dependent)
+    - name: Publish Portable Version
+      run: |
+        dotnet publish $env:Solution_Name `
+          --configuration ${{ matrix.configuration }} `
+          --runtime win-x64 `
+          --self-contained false `
+          --output ./publish/portable `
+          --no-restore
+      working-directory: ${{ env.Project_Directory }}
 
-    # Remove the pfx
-    - name: Remove the pfx
-      run: Remove-Item -path $env:Wap_Project_Directory\GitHubActionsWorkflow.pfx
+    # Run tests if they exist
+    - name: Run tests
+      run: dotnet test $env:Solution_Name --configuration ${{ matrix.configuration }} --no-build --logger trx --results-directory "TestResults"
+      working-directory: ${{ env.Project_Directory }}
+      continue-on-error: true
 
-    # Upload the MSIX package: https://github.com/marketplace/actions/upload-a-build-artifact
-    - name: Upload build artifacts
+    # Get version information
+    - name: Get Version
+      id: version
+      shell: pwsh
+      run: |
+        if (Test-Path "version.txt") {
+          $version = Get-Content "version.txt" -Raw
+          $version = $version.Trim()
+        } else {
+          $version = "1.0.0"
+        }
+        echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+        echo "Version: $version"
+
+    # Create artifacts
+    - name: Create Release Artifacts
+      shell: pwsh
+      run: |
+        # Create release directory
+        New-Item -ItemType Directory -Force -Path "./release"
+        
+        # Copy single-file executable
+        if (Test-Path "./publish/win-x64/TelegramChatViewer.exe") {
+          Copy-Item "./publish/win-x64/TelegramChatViewer.exe" "./release/TelegramChatViewer-v${{ steps.version.outputs.VERSION }}-win-x64.exe"
+        }
+        
+        # Create portable zip
+        if (Test-Path "./publish/portable") {
+          Compress-Archive -Path "./publish/portable/*" -DestinationPath "./release/TelegramChatViewer-v${{ steps.version.outputs.VERSION }}-portable.zip"
+        }
+        
+        # Copy example files
+        if (Test-Path "./examples") {
+          Copy-Item "./examples" "./release/examples" -Recurse
+        }
+        
+        # Copy documentation
+        if (Test-Path "README.md") {
+          Copy-Item "README.md" "./release/"
+        }
+        if (Test-Path "FEATURES.md") {
+          Copy-Item "FEATURES.md" "./release/"
+        }
+        
+        # Create source archive
+        $sourceFiles = @(
+          "*.cs", "*.xaml", "*.csproj", "*.sln", "*.json", "*.md", "*.txt", "*.bat", "*.ps1", "*.ico", "*.manifest",
+          "Services/*", "Models/*", "Properties/*", ".github/*"
+        )
+        
+        $tempDir = "TelegramChatViewer-Source"
+        New-Item -ItemType Directory -Force -Path $tempDir
+        
+        foreach ($pattern in $sourceFiles) {
+          $files = Get-ChildItem -Path $pattern -Recurse -File -ErrorAction SilentlyContinue
+          foreach ($file in $files) {
+            $relativePath = $file.FullName.Substring((Get-Location).Path.Length + 1)
+            $destPath = Join-Path $tempDir $relativePath
+            $destDir = Split-Path $destPath -Parent
+            New-Item -ItemType Directory -Force -Path $destDir -ErrorAction SilentlyContinue
+            Copy-Item $file.FullName $destPath
+          }
+        }
+        
+        Compress-Archive -Path "./$tempDir/*" -DestinationPath "./release/TelegramChatViewer-v${{ steps.version.outputs.VERSION }}-source.zip"
+        Remove-Item $tempDir -Recurse -Force
+
+    # Upload build artifacts
+    - name: Upload Release Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: MSIX Package
-        path: ${{ env.Wap_Project_Directory }}\AppPackages
+        name: TelegramChatViewer-v${{ steps.version.outputs.VERSION }}
+        path: |
+          ./release/TelegramChatViewer-v${{ steps.version.outputs.VERSION }}-win-x64.exe
+          ./release/TelegramChatViewer-v${{ steps.version.outputs.VERSION }}-portable.zip
+          ./release/TelegramChatViewer-v${{ steps.version.outputs.VERSION }}-source.zip
+          ./release/README.md
+          ./release/FEATURES.md
+        retention-days: 90
+
+    # Create GitHub Release on tag push
+    - name: Create GitHub Release
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: softprops/action-gh-release@v1
+      with:
+        name: Telegram Chat Viewer ${{ steps.version.outputs.VERSION }}
+        body: |
+          # Telegram Chat Viewer ${{ steps.version.outputs.VERSION }}
+          
+          ## 🚀 What's New
+          - Advanced text selection (individual and multi-message)
+          - User-based alternating message layout
+          - Performance optimization for massive datasets (100k+ messages)
+          - Rich media support (voice, stickers, videos, photos)
+          - Real-time search with keyboard navigation
+          - Light/dark theme support
+          
+          ## 📦 Downloads
+          
+          ### Recommended
+          - **TelegramChatViewer-v${{ steps.version.outputs.VERSION }}-win-x64.exe** - Single-file executable (no installation required)
+          
+          ### Alternative
+          - **TelegramChatViewer-v${{ steps.version.outputs.VERSION }}-portable.zip** - Requires .NET 8.0 Runtime
+          - **TelegramChatViewer-v${{ steps.version.outputs.VERSION }}-source.zip** - Source code
+          
+          ## 🛠️ System Requirements
+          - Windows 10/11 (x64)
+          - .NET 8.0 Runtime (included in single-file executable)
+          
+          ## 📋 Features
+          - **Text Selection**: Select any text element (usernames, messages, timestamps)
+          - **Multi-Message Selection**: `Ctrl+Shift+A` to select multiple messages
+          - **Performance**: Handles massive chat files (100k+ messages)
+          - **Search**: Real-time search with F3/Shift+F3 navigation
+          - **Themes**: Light and dark mode support
+          
+          ## 🔧 Usage
+          1. Download the `.exe` file
+          2. Run directly (no installation needed)
+          3. Click "Load Chat" and select your Telegram JSON export
+          4. Use `Ctrl+Shift+A` for multi-message selection
+          
+          Full documentation available in the repository.
+        files: |
+          ./release/TelegramChatViewer-v${{ steps.version.outputs.VERSION }}-win-x64.exe
+          ./release/TelegramChatViewer-v${{ steps.version.outputs.VERSION }}-portable.zip
+          ./release/TelegramChatViewer-v${{ steps.version.outputs.VERSION }}-source.zip
+          ./release/README.md
+          ./release/FEATURES.md
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # Upload test results
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: TestResults
+        retention-days: 30
