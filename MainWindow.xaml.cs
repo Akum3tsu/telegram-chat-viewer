@@ -1106,45 +1106,51 @@ namespace TelegramChatViewer
 
             // Apply alternating layout if enabled
             bool alignRight = GetMessageAlignment(message, messageIndex);
+            
+            // Check if we should show the sender header (for message grouping)
+            bool showSenderHeader = ShouldShowSenderHeader(message, messageIndex);
 
-            // Member header
-            var headerPanel = new StackPanel
+            // Member header (only show if needed for grouping)
+            if (showSenderHeader)
             {
-                Orientation = Orientation.Horizontal,
-                Margin = new Thickness(10, 0, 0, 3)
-            };
+                var headerPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    Margin = new Thickness(10, 0, 0, 3)
+                };
 
-            // Align header based on message alignment
-            if (alignRight)
-            {
-                headerPanel.HorizontalAlignment = HorizontalAlignment.Right;
-                headerPanel.Margin = new Thickness(0, 0, 10, 3);
+                // Align header based on message alignment
+                if (alignRight)
+                {
+                    headerPanel.HorizontalAlignment = HorizontalAlignment.Right;
+                    headerPanel.Margin = new Thickness(0, 0, 10, 3);
+                }
+
+                var memberColor = GetMemberColor(message.DisplaySender);
+                var memberLabel = new TextBox
+                {
+                    Text = message.DisplaySender,
+                    FontFamily = new FontFamily("Segoe UI"),
+                    FontSize = 13,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = memberColor,
+                    IsReadOnly = true,
+                    Background = Brushes.Transparent,
+                    BorderThickness = new Thickness(0),
+                    IsTabStop = false,
+                    Cursor = Cursors.IBeam,
+                    FocusVisualStyle = null
+                };
+
+                headerPanel.Children.Add(memberLabel);
+                memberContainer.Children.Add(headerPanel);
             }
 
-            var memberColor = GetMemberColor(message.DisplaySender);
-            var memberLabel = new TextBox
-            {
-                Text = message.DisplaySender,
-                FontFamily = new FontFamily("Segoe UI"),
-                FontSize = 13,
-                FontWeight = FontWeights.Bold,
-                Foreground = memberColor,
-                IsReadOnly = true,
-                Background = Brushes.Transparent,
-                BorderThickness = new Thickness(0),
-                IsTabStop = false,
-                Cursor = Cursors.IBeam,
-                FocusVisualStyle = null
-            };
-
-            headerPanel.Children.Add(memberLabel);
-            memberContainer.Children.Add(headerPanel);
-
-            // Message bubble
+            // Message bubble - adjust margin based on whether header is shown
             var bubble = CreateBasicMessageBubble(message);
             var messageContainer = new Grid
             {
-                Margin = new Thickness(0, 1, 0, 1)
+                Margin = showSenderHeader ? new Thickness(0, 1, 0, 1) : new Thickness(0, 0, 0, 1)
             };
 
             if (alignRight)
