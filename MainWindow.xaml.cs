@@ -15,6 +15,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using TelegramChatViewer.Models;
 using TelegramChatViewer.Services;
+using NAudio.Wave;
+using NAudio.Vorbis;
 
 namespace TelegramChatViewer
 {
@@ -45,7 +47,7 @@ namespace TelegramChatViewer
         private const int ScrollThrottleMs = 50;
         
         // Progressive loading state
-        private int _progressiveLoadSize = 500;
+        private int _progressiveLoadSize = 5000;
         
         // Performance optimization caches
         private readonly Dictionary<string, Brush> _resourceCache = new Dictionary<string, Brush>();
@@ -1578,18 +1580,7 @@ namespace TelegramChatViewer
                 {
                     case "voice_message":
                     case "voice_note":
-                        // Keep border for voice messages as they need the interactive UI
-                        var voiceContainer = new Border
-                        {
-                            Background = GetCachedResource("SecondaryBackground"),
-                            CornerRadius = new CornerRadius(8),
-                            Padding = new Thickness(12),
-                            Margin = new Thickness(0, 0, 0, 8),
-                            MaxWidth = 400
-                        };
-                        var voiceElement = CreateVoiceMessageElement(message);
-                        voiceContainer.Child = voiceElement;
-                        return voiceContainer;
+                        return CreateVoiceMessageElement(message);
                     
                     case "sticker":
                         return CreateStickerElement(message);
@@ -1606,18 +1597,7 @@ namespace TelegramChatViewer
                     default:
                         if (!string.IsNullOrEmpty(message.File))
                         {
-                            // Keep border for generic files as they need the info UI
-                            var fileContainer = new Border
-                            {
-                                Background = GetCachedResource("SecondaryBackground"),
-                                CornerRadius = new CornerRadius(8),
-                                Padding = new Thickness(12),
-                                Margin = new Thickness(0, 0, 0, 8),
-                                MaxWidth = 400
-                            };
-                            var fileElement = CreateGenericFileElement(message);
-                            fileContainer.Child = fileElement;
-                            return fileContainer;
+                            return CreateGenericFileElement(message);
                         }
                         break;
                 }
@@ -1700,88 +1680,177 @@ namespace TelegramChatViewer
             controlPanel.Children.Add(voiceInfo);
             voicePanel.Children.Add(controlPanel);
 
-            // Add built-in media player
+            // Add audio player support
             if (File.Exists(audioPath))
             {
-                try
+                var fileExtension = Path.GetExtension(audioPath).ToLower();
+                var isPlaying = false;
+                IWavePlayer wavePlayer = null;
+                AudioFileReader audioFileReader = null;
+                VorbisWaveReader vorbisReader = null;
+
+                // Update play button based on state
+                Action updatePlayButton = () =>
                 {
-                    var mediaElement = new MediaElement
-                    {
-                        Source = new Uri(audioPath, UriKind.Absolute),
-                        LoadedBehavior = MediaState.Manual,
-                        UnloadedBehavior = MediaState.Manual,
-                        Volume = 0.7,
-                        Visibility = Visibility.Collapsed // Hidden but functional
-                    };
+                    playButton.Content = isPlaying ? "⏸️" : "▶️";
+                };
 
-                    var isPlaying = false;
-                    
-                    // Update play button based on state
-                    Action updatePlayButton = () =>
+                // Cleanup action
+                Action cleanup = () =>
+                {
+                    try
                     {
-                        playButton.Content = isPlaying ? "⏸️" : "▶️";
-                    };
+                        wavePlayer?.Stop();
+                        wavePlayer?.Dispose();
+                        audioFileReader?.Dispose();
+                        vorbisReader?.Dispose();
+                        wavePlayer = null;
+                        audioFileReader = null;
+                        vorbisReader = null;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error($"Error during audio cleanup: {ex.Message}");
+                    }
+                };
 
-                    // Media event handlers
-                    mediaElement.MediaEnded += (s, e) =>
+                // Play button click handler
+                playButton.Click += async (s, e) =>
+                {
+                    try
                     {
-                        isPlaying = false;
+                        if (isPlaying)
+                        {
+                            // Stop playback
+                            isPlaying = false;
+                            updatePlayButton();
+                            cleanup();
+                            return;
+                        }
+
+                        // Start playback
+                        isPlaying = true;
                         updatePlayButton();
-                        mediaElement.Stop();
-                    };
 
-                    mediaElement.MediaFailed += (s, e) =>
-                    {
-                        _logger.Error($"Media playback failed: {e.ErrorException?.Message}");
-                        isPlaying = false;
-                        updatePlayButton();
-                    };
-
-                    // Play button click handler
-                    playButton.Click += (s, e) =>
-                    {
                         try
                         {
-                            if (isPlaying)
+                            // Try NAudio for OGG and other formats first
+                            if (fileExtension == ".ogg" || fileExtension == ".oga")
                             {
-                                mediaElement.Pause();
-                                isPlaying = false;
+                                // Use NAudio.Vorbis for OGG files
+                                vorbisReader = new VorbisWaveReader(audioPath);
+                                wavePlayer = new WaveOutEvent();
+                                
+                                wavePlayer.PlaybackStopped += (sender, args) =>
+                                {
+                                    Application.Current.Dispatcher.Invoke(() =>
+                                    {
+                                        isPlaying = false;
+                                        updatePlayButton();
+                                        cleanup();
+                                    });
+                                };
+
+                                wavePlayer.Init(vorbisReader);
+                                wavePlayer.Volume = 0.7f;
+                                wavePlayer.Play();
                             }
                             else
                             {
-                                mediaElement.Play();
-                                isPlaying = true;
+                                // Use NAudio for other formats (MP3, WAV, etc.)
+                                audioFileReader = new AudioFileReader(audioPath);
+                                wavePlayer = new WaveOutEvent();
+                                
+                                wavePlayer.PlaybackStopped += (sender, args) =>
+                                {
+                                    Application.Current.Dispatcher.Invoke(() =>
+                                    {
+                                        isPlaying = false;
+                                        updatePlayButton();
+                                        cleanup();
+                                    });
+                                };
+
+                                wavePlayer.Init(audioFileReader);
+                                wavePlayer.Volume = 0.7f;
+                                wavePlayer.Play();
                             }
-                            updatePlayButton();
                         }
                         catch (Exception ex)
                         {
-                            _logger.Error($"Failed to toggle playback: {ex.Message}");
-                            MessageBox.Show($"Could not play audio file.\n\nFile: {audioPath}", 
-                                "Audio Playback Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        }
-                    };
+                            _logger.Error($"NAudio playback failed: {ex.Message}");
+                            isPlaying = false;
+                            updatePlayButton();
+                            cleanup();
 
-                    voicePanel.Children.Add(mediaElement);
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error($"Failed to create media element: {ex.Message}");
-                    // Fallback to external player
-                    playButton.Click += (s, e) =>
+                            // Fallback to MediaElement for basic formats
+                            try
+                            {
+                                var mediaElement = new MediaElement
+                                {
+                                    Source = new Uri(audioPath, UriKind.Absolute),
+                                    LoadedBehavior = MediaState.Manual,
+                                    UnloadedBehavior = MediaState.Manual,
+                                    Volume = 0.7,
+                                    Visibility = Visibility.Collapsed
+                                };
+
+                                mediaElement.MediaEnded += (s2, e2) =>
+                                {
+                                    isPlaying = false;
+                                    updatePlayButton();
+                                };
+
+                                mediaElement.MediaFailed += (s2, e2) =>
+                                {
+                                    _logger.Error($"MediaElement playback also failed: {e2.ErrorException?.Message}");
+                                    isPlaying = false;
+                                    updatePlayButton();
+                                    MessageBox.Show($"Could not play audio file. Format may not be supported.\n\nFile: {audioPath}", 
+                                        "Audio Playback Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                                };
+
+                                voicePanel.Children.Add(mediaElement);
+                                mediaElement.Play();
+                                isPlaying = true;
+                                updatePlayButton();
+                            }
+                            catch (Exception ex2)
+                            {
+                                _logger.Error($"MediaElement fallback failed: {ex2.Message}");
+                                isPlaying = false;
+                                updatePlayButton();
+                                
+                                // Final fallback to external player
+                                try
+                                {
+                                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(audioPath) { UseShellExecute = true });
+                                }
+                                catch (Exception ex3)
+                                {
+                                    _logger.Error($"External player fallback failed: {ex3.Message}");
+                                    MessageBox.Show($"Could not play audio file with any method.\n\nFile: {audioPath}", 
+                                        "Audio Playback Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
                     {
-                        try
-                        {
-                            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(audioPath) { UseShellExecute = true });
-                        }
-                        catch (Exception ex2)
-                        {
-                            _logger.Error($"Failed to play audio externally: {ex2.Message}");
-                            MessageBox.Show($"Could not play audio file.\n\nFile: {audioPath}", 
-                                "Audio Playback Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        }
-                    };
-                }
+                        _logger.Error($"Failed to toggle playback: {ex.Message}");
+                        isPlaying = false;
+                        updatePlayButton();
+                        cleanup();
+                        MessageBox.Show($"Could not play audio file.\n\nFile: {audioPath}", 
+                            "Audio Playback Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                };
+
+                // Cleanup when panel is unloaded
+                voicePanel.Unloaded += (s, e) =>
+                {
+                    cleanup();
+                };
             }
             else
             {
@@ -1864,7 +1933,7 @@ namespace TelegramChatViewer
                 {
                     try
                     {
-                        // Try to display as animated image (WPF supports GIF animation) - borderless for cleaner look
+                        // Try to display as animated image (WPF supports GIF animation)
                         var image = new Image
                         {
                             Source = new BitmapImage(new Uri(fullPath, UriKind.Absolute)),
