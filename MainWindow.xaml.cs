@@ -566,13 +566,14 @@ namespace TelegramChatViewer
 
         private async Task RenderMessagesBatchOptimized(List<TelegramMessage> messages, int startIndex, HashSet<DateTime> dateSeparators)
         {
-            var currentDate = startIndex > 0 ? _currentMessages[startIndex - 1].ParsedDate.Date : DateTime.MinValue;
-            int messageIndex = startIndex;
+            var currentDate = startIndex > 0 && _allMessages.Count > startIndex - 1 ? _allMessages[startIndex - 1].ParsedDate.Date : DateTime.MinValue;
             var elementsToAdd = new List<UIElement>();
 
             // Pre-create UI elements in memory before adding to visual tree
-            foreach (var message in messages)
+            for (int i = 0; i < messages.Count; i++)
             {
+                var message = messages[i];
+                var messageIndex = startIndex + i; // Calculate actual position in full message list
                 var messageDate = message.ParsedDate.Date;
                 
                 // Add date separator if needed
@@ -591,8 +592,6 @@ namespace TelegramChatViewer
                 {
                     elementsToAdd.Add(CreateBasicMessageElement(message, messageIndex));
                 }
-
-                messageIndex++;
             }
 
             // Add all elements to the UI tree in batches to prevent freezing
