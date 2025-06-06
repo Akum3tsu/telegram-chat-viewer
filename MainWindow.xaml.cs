@@ -1206,34 +1206,49 @@ namespace TelegramChatViewer
             // Reply indicator
             if (message.IsReply)
             {
+                // Find the original message to get the sender's color
+                var originalMessage = _allMessages.FirstOrDefault(m => m.Id == message.ReplyToMessageId);
+                var originalSenderColor = originalMessage != null ? GetMemberColor(originalMessage.DisplaySender) : _lightAccent;
+                
+                // Use a lighter version of the sender's color for the background
+                var senderBrush = originalSenderColor as SolidColorBrush;
+                var replyBackgroundColor = senderBrush?.Color ?? ((SolidColorBrush)_lightAccent).Color;
+                var lightReplyBackground = new SolidColorBrush(Color.FromArgb(40, replyBackgroundColor.R, replyBackgroundColor.G, replyBackgroundColor.B));
+
                 var replyBorder = new Border
                 {
-                    BorderBrush = _lightAccent,
+                    BorderBrush = originalSenderColor,
                     BorderThickness = new Thickness(3, 0, 0, 0),
-                    Padding = new Thickness(8, 4, 4, 4),
-                    Margin = new Thickness(0, 0, 0, 6),
-                    Background = _isLightMode
-                        ? new SolidColorBrush(Color.FromArgb(30, 42, 171, 238))
-                        : new SolidColorBrush(Color.FromArgb(30, 42, 171, 238))
+                    Padding = new Thickness(10, 6, 8, 6),
+                    Margin = new Thickness(0, 0, 0, 8),
+                    Background = lightReplyBackground,
+                    CornerRadius = new CornerRadius(0, 6, 6, 0)
                 };
 
                 // Try to find the original message and show its content preview
                 var replyText = GetReplyPreviewText(message.ReplyToMessageId);
+                
+                // Enhanced quote display with sender name
+                var fullReplyText = originalMessage != null 
+                    ? $"{originalMessage.DisplaySender}: {replyText}"
+                    : replyText;
+
                 var replyTextBlock = new TextBox
                 {
-                    Text = replyText,
+                    Text = fullReplyText,
                     FontFamily = new FontFamily("Segoe UI"),
-                    FontSize = 11,
-                    FontStyle = FontStyles.Italic,
-                    Foreground = _lightAccent,
+                    FontSize = 12, // Increased from 11 to 12 for better readability
+                    FontStyle = FontStyles.Normal, // Changed from Italic for better readability
+                    Foreground = originalSenderColor,
                     TextWrapping = TextWrapping.Wrap,
-                    MaxHeight = 120, // Increased height for better readability of quoted messages
+                    MaxHeight = 140, // Increased height for better readability
                     IsReadOnly = true,
                     Background = Brushes.Transparent,
                     BorderThickness = new Thickness(0),
                     IsTabStop = false,
                     Cursor = Cursors.IBeam,
-                    FocusVisualStyle = null
+                    FocusVisualStyle = null,
+                    FontWeight = FontWeights.Medium // Add slight weight for better visibility
                 };
 
                 replyBorder.Child = replyTextBlock;
