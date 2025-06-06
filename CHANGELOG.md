@@ -5,6 +5,22 @@ All notable changes to the Telegram Chat Viewer project will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - 2025-01-06
+
+### 🐛 Bug Fixes
+- **Sticker Rendering** - Fixed stickers to display actual images instead of just emoji
+  - Stickers now render as proper images from .webp files
+  - Added support for both main file and thumbnail fallback
+  - Maintains borderless design for clean appearance
+  - Click to open in external viewer functionality
+  - Graceful fallback to emoji display if image can't be loaded
+  - Added emoji label below sticker for context
+
+### 🔧 Technical Improvements
+- Enhanced sticker handling to match photo and animation rendering
+- Improved error handling for missing or corrupted sticker files
+- Better file path resolution for sticker assets
+
 ## [0.4.0] - 2025-01-06
 
 ### 🎉 Major Features Added
