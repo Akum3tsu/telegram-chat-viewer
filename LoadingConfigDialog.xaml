@@ -297,17 +297,6 @@
                                    Foreground="{DynamicResource CurrentText}"
                                    Margin="0,0,0,12"/>
 
-                        <CheckBox x:Name="MassiveLoadCheckBox"
-                                  Content="Massive Load (5000 messages per scroll)"
-                                  Style="{StaticResource ModernCheckBoxStyle}"
-                                  Checked="PerformanceOption_Changed"
-                                  Unchecked="PerformanceOption_Changed"/>
-                        
-                        <TextBlock Text="Loads larger chunks for faster navigation through big chats"
-                                   FontSize="11"
-                                   Foreground="{DynamicResource CurrentSecondaryText}"
-                                   Margin="20,0,0,8"/>
-
                         <CheckBox x:Name="VirtualScrollingCheckBox"
                                   Content="Virtual Scrolling"
                                   Style="{StaticResource ModernCheckBoxStyle}"
@@ -331,18 +320,13 @@
                                       Width="150"
                                       SelectionChanged="ChunkSize_Changed">
                                 <ComboBoxItem Content="500 (Conservative)" Tag="500"/>
-                                <ComboBoxItem Content="1000 (Balanced)" Tag="1000" IsSelected="True"/>
+                                <ComboBoxItem Content="1000 (Balanced)" Tag="1000"/>
                                 <ComboBoxItem Content="2000 (Aggressive)" Tag="2000"/>
-                                <ComboBoxItem Content="5000 (Massive)" Tag="5000"/>
+                                <ComboBoxItem Content="5000 (Massive)" Tag="5000" IsSelected="True"/>
                                 <ComboBoxItem Content="10000 (Fast)" Tag="10000"/>
                                 <ComboBoxItem Content="50000 (Ultra Fast)" Tag="50000"/>
                             </ComboBox>
                         </StackPanel>
-                        
-                        <TextBlock Text="Number of messages loaded per scroll action"
-                                   FontSize="11"
-                                   Foreground="{DynamicResource CurrentSecondaryText}"
-                                   Margin="20,4,0,0"/>
                     </StackPanel>
                 </Border>
 
