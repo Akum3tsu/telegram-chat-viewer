@@ -145,7 +145,8 @@
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="4"
                                 Padding="{TemplateBinding Padding}">
-                            <ScrollViewer x:Name="PART_ContentHost"/>
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsFocused" Value="True">
@@ -155,6 +156,13 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+        </Style>
+
+        <!-- Search TextBox style with better height management -->
+        <Style x:Key="SearchTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource ModernTextBoxStyle}">
+            <Setter Property="Padding" Value="8,3"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
 
         <!-- Modern Menu Styling -->
@@ -408,7 +416,7 @@
                         </Grid.ColumnDefinitions>
                         <TextBox x:Name="SearchTextBox"
                                  Grid.Column="0"
-                                 Style="{StaticResource ModernTextBoxStyle}"
+                                 Style="{StaticResource SearchTextBoxStyle}"
                                  Background="White"
                                  Height="30"
                                  TextChanged="SearchTextBox_TextChanged"
