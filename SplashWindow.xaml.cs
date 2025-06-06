@@ -32,7 +32,7 @@ namespace TelegramChatViewer
             }
             catch
             {
-                VersionText.Text = "v0.2.0";
+                VersionText.Text = "v1.0.2";
             }
         }
 

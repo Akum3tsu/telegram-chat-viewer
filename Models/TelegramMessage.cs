@@ -83,16 +83,21 @@ namespace TelegramChatViewer.Models
         {
             get
             {
-                // Prefer the ISO date string format as it's more reliable and matches the source
-                if (!string.IsNullOrEmpty(DateString) && DateTime.TryParse(DateString, out DateTime stringResult))
+                // Prefer the ISO date string format and treat it as unspecified kind to avoid timezone conversion
+                if (!string.IsNullOrEmpty(DateString))
                 {
-                    return stringResult;
+                    if (DateTime.TryParse(DateString, out DateTime stringResult))
+                    {
+                        // Force the result to be DateTimeKind.Unspecified to prevent any timezone conversion
+                        return DateTime.SpecifyKind(stringResult, DateTimeKind.Unspecified);
+                    }
                 }
 
                 if (DateUnixtime.HasValue)
                 {
-                    // Use UTC time directly without conversion to preserve the original time
-                    return DateTimeOffset.FromUnixTimeSeconds(DateUnixtime.Value).DateTime;
+                    // Convert Unix timestamp to UTC and then force to Unspecified to prevent conversion
+                    var utcDateTime = DateTimeOffset.FromUnixTimeSeconds(DateUnixtime.Value).DateTime;
+                    return DateTime.SpecifyKind(utcDateTime, DateTimeKind.Unspecified);
                 }
 
                 return DateTime.MinValue;

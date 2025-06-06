@@ -5,6 +5,30 @@ All notable changes to the Telegram Chat Viewer project will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2025-01-28
+
+### 🐛 Bug Fixes
+- **Comprehensive Timestamp Fix** - Completely eliminated timezone conversion issues
+  - **Universal Fix**: Works for all Telegram exports regardless of which date field is present
+  - **Date-only exports**: Fixed exports that only have "date" field (missing "date_unixtime")
+  - **No Timezone Conversion**: Timestamps now display exactly as they appear in source data
+  - **DateTimeKind.Unspecified**: Forces all parsed dates to prevent any system timezone interference
+  - Example: JSON `"2016-04-28T11:24:08"` now always displays as `11:24` regardless of user's timezone
+
+### 🎨 UI Improvements
+- **Splash Screen Version Fix** - Splash screen now correctly displays current version
+  - Fixed hardcoded version display from v0.4.2 to dynamic version reading
+  - Consistent version display across splash screen, status bar, and about dialog
+  - Updated fallback version handling for better reliability
+
+### 🔧 Technical Improvements
+- **Enhanced Date Parsing Algorithm** - Bulletproof timestamp handling
+  - Completely timezone-agnostic date parsing
+  - Preserves exact timestamp data from any Telegram export format
+  - Works consistently across different system configurations and timezones
+
+---
+
 ## [1.0.1] - 2025-01-28
 
 ### 🐛 Bug Fixes

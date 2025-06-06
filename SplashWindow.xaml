@@ -82,7 +82,7 @@
             <!-- Version Info -->
             <TextBlock x:Name="VersionText"
                       Grid.Row="3"
-                      Text="v0.4.2"
+                      Text="v1.0.2"
                       FontSize="12"
                       Foreground="#8696A0"
                       HorizontalAlignment="Center"
