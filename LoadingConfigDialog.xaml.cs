@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -43,6 +44,43 @@ namespace TelegramChatViewer
                     System.Windows.MessageBoxImage.Error);
                 throw;
             }
+        }
+
+        public void SetSuggestedConfiguration(LoadingConfig suggestedConfig)
+        {
+            // Apply suggested configuration to the UI
+            switch (suggestedConfig.LoadingStrategy)
+            {
+                case LoadingStrategy.LoadAll:
+                    if (LoadAllRadio != null) LoadAllRadio.IsChecked = true;
+                    break;
+                case LoadingStrategy.Progressive:
+                    if (ProgressiveRadio != null) ProgressiveRadio.IsChecked = true;
+                    break;
+                case LoadingStrategy.Streaming:
+                    if (StreamingRadio != null) StreamingRadio.IsChecked = true;
+                    break;
+            }
+
+            // Set chunk size
+            if (ChunkSizeComboBox != null)
+            {
+                var chunkSizeMapping = new System.Collections.Generic.Dictionary<int, int>
+                {
+                    { 500, 0 }, { 1000, 1 }, { 2000, 2 }, { 5000, 3 }, { 10000, 4 }, { 50000, 5 }
+                };
+                
+                var closestIndex = chunkSizeMapping.OrderBy(kvp => Math.Abs(kvp.Key - suggestedConfig.ChunkSize)).First().Value;
+                ChunkSizeComboBox.SelectedIndex = closestIndex;
+            }
+
+            // Set performance options
+            if (MassiveLoadCheckBox != null) MassiveLoadCheckBox.IsChecked = suggestedConfig.UseMassiveLoad;
+            if (VirtualScrollingCheckBox != null) VirtualScrollingCheckBox.IsChecked = suggestedConfig.UseVirtualScrolling;
+            if (AlternatingLayoutCheckBox != null) AlternatingLayoutCheckBox.IsChecked = suggestedConfig.UseAlternatingLayout;
+
+            // Update estimates after applying suggestions
+            UpdateEstimates();
         }
 
         private void ApplyTheme()
