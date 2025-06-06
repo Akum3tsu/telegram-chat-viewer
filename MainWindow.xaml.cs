@@ -1758,20 +1758,20 @@ namespace TelegramChatViewer
                         isPlaying = true;
                         updatePlayButton();
 
-                        try
+                        // Try different approaches based on file type
+                        if (fileExtension == ".ogg" || fileExtension == ".oga")
                         {
-                            // Try NAudio for OGG and other formats first
-                            if (fileExtension == ".ogg" || fileExtension == ".oga")
+                            _logger.Info($"Attempting to play OGG file: {audioPath}");
+                            
+                            // Check if file is not empty
+                            if (fileInfo.Length == 0)
                             {
-                                _logger.Info($"Attempting to play OGG file: {audioPath}");
-                                
-                                // Check if file is not empty
-                                if (fileInfo.Length == 0)
-                                {
-                                    throw new InvalidOperationException("OGG file is empty");
-                                }
-                                
-                                // Use NAudio.Vorbis for OGG files
+                                throw new InvalidOperationException("OGG file is empty");
+                            }
+
+                            // Method 1: Try NAudio.Vorbis first
+                            try
+                            {
                                 vorbisReader = new VorbisWaveReader(audioPath);
                                 
                                 // Log audio format details
@@ -1793,13 +1793,62 @@ namespace TelegramChatViewer
                                 wavePlayer.Volume = 0.7f;
                                 wavePlayer.Play();
                                 
-                                _logger.Info($"OGG playback started successfully for: {audioPath}");
+                                _logger.Info($"OGG playback via NAudio.Vorbis started successfully for: {audioPath}");
                             }
-                            else
+                            catch (Exception vorbisEx)
+                            {
+                                _logger.Error($"NAudio.Vorbis failed: {vorbisEx.Message}");
+                                cleanup(); // Clean up any partial initialization
+                                
+                                // Method 2: Try external player as immediate fallback for OGG
+                                try
+                                {
+                                    _logger.Info($"Trying external player for OGG: {audioPath}");
+                                    var processInfo = new ProcessStartInfo(audioPath)
+                                    {
+                                        UseShellExecute = true,
+                                        Verb = "open"
+                                    };
+                                    Process.Start(processInfo);
+                                    
+                                    // Since external player is async, we'll mark as playing briefly then stop
+                                    isPlaying = true;
+                                    updatePlayButton();
+                                    
+                                    // Auto-reset button after 2 seconds
+                                    var resetTimer = new DispatcherTimer
+                                    {
+                                        Interval = TimeSpan.FromSeconds(2)
+                                    };
+                                    resetTimer.Tick += (s2, e2) =>
+                                    {
+                                        resetTimer.Stop();
+                                        isPlaying = false;
+                                        updatePlayButton();
+                                    };
+                                    resetTimer.Start();
+                                    
+                                    _logger.Info($"OGG opened in external player: {audioPath}");
+                                    return; // Exit the click handler successfully
+                                }
+                                catch (Exception externalEx)
+                                {
+                                    _logger.Error($"External player also failed: {externalEx.Message}");
+                                    isPlaying = false;
+                                    updatePlayButton();
+                                    MessageBox.Show($"Failed to play OGG voice message.\n\nNAudio error: {vorbisEx.Message}\nExternal player error: {externalEx.Message}\n\nFile: {audioPath}", 
+                                        "OGG Playback Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                                    return;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // Use NAudio for other formats (MP3, WAV, etc.)
+                            try
                             {
                                 _logger.Info($"Attempting to play audio file: {audioPath}");
                                 
-                                // Use NAudio for other formats (MP3, WAV, etc.)
                                 audioFileReader = new AudioFileReader(audioPath);
                                 wavePlayer = new WaveOutEvent();
                                 
@@ -1819,70 +1868,60 @@ namespace TelegramChatViewer
                                 
                                 _logger.Info($"Audio playback started successfully for: {audioPath}");
                             }
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.Error($"NAudio playback failed for {audioPath}: {ex.Message}", ex);
-                            isPlaying = false;
-                            updatePlayButton();
-                            cleanup();
-
-                            // Show specific error for OGG files
-                            if (fileExtension == ".ogg" || fileExtension == ".oga")
+                            catch (Exception audioEx)
                             {
-                                MessageBox.Show($"Failed to play OGG voice message.\n\nError: {ex.Message}\n\nFile: {audioPath}\n\nTry checking if the file exists and is not corrupted.", 
-                                    "OGG Playback Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                                return;
-                            }
-
-                            // Fallback to MediaElement for basic formats
-                            try
-                            {
-                                var mediaElement = new MediaElement
-                                {
-                                    Source = new Uri(audioPath, UriKind.Absolute),
-                                    LoadedBehavior = MediaState.Manual,
-                                    UnloadedBehavior = MediaState.Manual,
-                                    Volume = 0.7,
-                                    Visibility = Visibility.Collapsed
-                                };
-
-                                mediaElement.MediaEnded += (s2, e2) =>
-                                {
-                                    isPlaying = false;
-                                    updatePlayButton();
-                                };
-
-                                mediaElement.MediaFailed += (s2, e2) =>
-                                {
-                                    _logger.Error($"MediaElement playback also failed: {e2.ErrorException?.Message}");
-                                    isPlaying = false;
-                                    updatePlayButton();
-                                    MessageBox.Show($"Could not play audio file. Format may not be supported.\n\nFile: {audioPath}", 
-                                        "Audio Playback Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                                };
-
-                                voicePanel.Children.Add(mediaElement);
-                                mediaElement.Play();
-                                isPlaying = true;
-                                updatePlayButton();
-                            }
-                            catch (Exception ex2)
-                            {
-                                _logger.Error($"MediaElement fallback failed: {ex2.Message}");
-                                isPlaying = false;
-                                updatePlayButton();
+                                _logger.Error($"NAudio playback failed: {audioEx.Message}");
+                                cleanup();
                                 
-                                // Final fallback to external player
+                                // Fallback to MediaElement for basic formats
                                 try
                                 {
-                                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(audioPath) { UseShellExecute = true });
+                                    var mediaElement = new MediaElement
+                                    {
+                                        Source = new Uri(audioPath, UriKind.Absolute),
+                                        LoadedBehavior = MediaState.Manual,
+                                        UnloadedBehavior = MediaState.Manual,
+                                        Volume = 0.7,
+                                        Visibility = Visibility.Collapsed
+                                    };
+
+                                    mediaElement.MediaEnded += (s2, e2) =>
+                                    {
+                                        isPlaying = false;
+                                        updatePlayButton();
+                                    };
+
+                                    mediaElement.MediaFailed += (s2, e2) =>
+                                    {
+                                        _logger.Error($"MediaElement playback also failed: {e2.ErrorException?.Message}");
+                                        isPlaying = false;
+                                        updatePlayButton();
+                                        MessageBox.Show($"Could not play audio file. Format may not be supported.\n\nFile: {audioPath}", 
+                                            "Audio Playback Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                                    };
+
+                                    voicePanel.Children.Add(mediaElement);
+                                    mediaElement.Play();
+                                    isPlaying = true;
+                                    updatePlayButton();
                                 }
-                                catch (Exception ex3)
+                                catch (Exception ex2)
                                 {
-                                    _logger.Error($"External player fallback failed: {ex3.Message}");
-                                    MessageBox.Show($"Could not play audio file with any method.\n\nFile: {audioPath}", 
-                                        "Audio Playback Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                                    _logger.Error($"MediaElement fallback failed: {ex2.Message}");
+                                    isPlaying = false;
+                                    updatePlayButton();
+                                    
+                                    // Final fallback to external player
+                                    try
+                                    {
+                                        Process.Start(new ProcessStartInfo(audioPath) { UseShellExecute = true });
+                                    }
+                                    catch (Exception ex3)
+                                    {
+                                        _logger.Error($"External player fallback failed: {ex3.Message}");
+                                        MessageBox.Show($"Could not play audio file with any method.\n\nFile: {audioPath}", 
+                                            "Audio Playback Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                                    }
                                 }
                             }
                         }

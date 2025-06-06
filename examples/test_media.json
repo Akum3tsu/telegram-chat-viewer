@@ -28,14 +28,19 @@
       "file_size": 5000000
     },
     {
-      "id": 3,
-      "type": "message",
-      "date": "2024-01-01T10:02:00", 
-      "from": "Test User",
-      "text": "Voice message:",
-      "voice_note": "voice/test_voice.ogg",
-      "duration_seconds": 15,
-      "file_size": 50000
+        "id": 233005,
+        "type": "message",
+        "date": "2022-08-29T01:40:59",
+        "date_unixtime": "1661730059",
+        "from": "Voice User",
+        "from_id": "user142419147",
+        "file": "audio_2833@29-08-2022_01-40-59.ogg",
+        "file_size": 3674512,
+        "media_type": "voice_message",
+        "mime_type": "audio/ogg",
+        "duration_seconds": 178,
+        "text": "",
+        "text_entities": []
     }
   ]
 } 
