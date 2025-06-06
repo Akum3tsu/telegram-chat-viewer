@@ -83,14 +83,16 @@ namespace TelegramChatViewer.Models
         {
             get
             {
-                if (DateUnixtime.HasValue)
+                // Prefer the ISO date string format as it's more reliable and matches the source
+                if (!string.IsNullOrEmpty(DateString) && DateTime.TryParse(DateString, out DateTime stringResult))
                 {
-                    return DateTimeOffset.FromUnixTimeSeconds(DateUnixtime.Value).DateTime;
+                    return stringResult;
                 }
 
-                if (DateTime.TryParse(DateString, out DateTime result))
+                if (DateUnixtime.HasValue)
                 {
-                    return result;
+                    // Use UTC time directly without conversion to preserve the original time
+                    return DateTimeOffset.FromUnixTimeSeconds(DateUnixtime.Value).DateTime;
                 }
 
                 return DateTime.MinValue;

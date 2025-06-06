@@ -5,6 +5,23 @@ All notable changes to the Telegram Chat Viewer project will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2025-01-28
+
+### 🐛 Bug Fixes
+- **Timestamp Display Issue** - Fixed incorrect time display in message timestamps
+  - Messages now show correct time matching the source JSON data
+  - Fixed `ParsedDate` property to prioritize ISO date string format over Unix timestamp
+  - Eliminated timezone conversion issues that caused 2-hour time difference
+  - Example: Messages now correctly show `11:24` instead of `09:24` when source data is `2016-04-28T11:24:08`
+
+### 🔧 Technical Improvements
+- **Enhanced Date Parsing** - More reliable timestamp handling
+  - Prioritized ISO 8601 date string format for accuracy
+  - Improved fallback mechanism for Unix timestamp conversion
+  - Better preservation of original timestamp data from Telegram exports
+
+---
+
 ## [1.0.0] - 2025-01-28
 
 ### 🎉 First Official Release
