@@ -275,33 +275,26 @@ namespace TelegramChatViewer.Services
             var config = new LoadingConfig();
             var settings = _hardwareProfile.RecommendedSettings;
             
-            // Use 5000 as the default base chunk size for better user experience
+            // Always use 5000 as the default chunk size for consistent user experience
             var defaultChunkSize = 5000;
+            config.ChunkSize = defaultChunkSize;
             
-            // Adjust chunk size based on file size and hardware
-            if (fileSizeMB > 500 || estimatedMessageCount > 200000)
+            // Only adjust loading strategy based on file size, not chunk size
+            if (fileSizeMB > 100 || estimatedMessageCount > 50000)
             {
-                config.ChunkSize = Math.Max(settings.OptimalChunkSize, 15000);
-                config.LoadingStrategy = LoadingStrategy.Streaming;
-            }
-            else if (fileSizeMB > 100 || estimatedMessageCount > 50000)
-            {
-                config.ChunkSize = Math.Max(defaultChunkSize, settings.OptimalChunkSize);
                 config.LoadingStrategy = LoadingStrategy.Streaming;
             }
             else if (fileSizeMB > 20 || estimatedMessageCount > 10000)
             {
-                config.ChunkSize = defaultChunkSize; // Default 5000 for typical files
                 config.LoadingStrategy = LoadingStrategy.Progressive;
             }
             else
             {
-                config.ChunkSize = Math.Min(defaultChunkSize, 3000); // Smaller for very small files
                 config.LoadingStrategy = LoadingStrategy.LoadAll;
             }
             
             // Enable advanced features for high-end hardware
-            config.UseMassiveLoad = config.ChunkSize >= 5000; // Automatically determined by chunk size
+            config.UseMassiveLoad = config.ChunkSize >= 5000; // Always true since chunk size is always 5000
             config.UseVirtualScrolling = estimatedMessageCount > 5000;
             config.UseAlternatingLayout = true; // Always enable alternating layout for better readability
             
