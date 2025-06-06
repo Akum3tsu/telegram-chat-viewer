@@ -22,6 +22,8 @@ namespace TelegramChatViewer
     {
         private readonly Logger _logger;
         private readonly MessageParser _messageParser;
+        private readonly PerformanceOptimizer _performanceOptimizer;
+        private readonly ParallelMessageParser _parallelMessageParser;
         
         // Application state
         private List<TelegramMessage> _allMessages = new List<TelegramMessage>();
@@ -112,8 +114,14 @@ namespace TelegramChatViewer
                 File.AppendAllText(Path.Combine(AppContext.BaseDirectory, "debug_startup.log"), $"[{DateTime.Now}] InitializeComponent completed\n");
                 
                 _logger = new Logger();
+                _performanceOptimizer = new PerformanceOptimizer(_logger);
                 _messageParser = new MessageParser(_logger);
-                File.AppendAllText(Path.Combine(AppContext.BaseDirectory, "debug_startup.log"), $"[{DateTime.Now}] Logger and MessageParser created\n");
+                _parallelMessageParser = new ParallelMessageParser(_logger, _performanceOptimizer);
+                
+                // Log hardware capabilities
+                _performanceOptimizer.LogPerformanceReport();
+                
+                File.AppendAllText(Path.Combine(AppContext.BaseDirectory, "debug_startup.log"), $"[{DateTime.Now}] Logger, Performance Optimizer, and Parsers created\n");
                 
                 InitializeSearchTimer();
                 InitializeScrollThrottleTimer();
@@ -389,8 +397,13 @@ namespace TelegramChatViewer
                 // Estimate message count (rough estimate based on file size)
                 var estimatedMessageCount = (int)(fileSizeMB * 1000); // Rough estimate
                 
-                // Show loading configuration dialog
+                // Get hardware-optimized configuration suggestion
+                var suggestedConfig = _performanceOptimizer.GetOptimizedLoadingConfig(fileSizeMB, estimatedMessageCount);
+                
+                // Show loading configuration dialog with suggestions
                 var configDialog = new LoadingConfigDialog(openFileDialog.FileName, fileSizeMB, estimatedMessageCount, _isLightMode);
+                configDialog.SetSuggestedConfiguration(suggestedConfig);
+                
                 if (configDialog.ShowDialog() == true && !configDialog.WasCancelled)
                 {
                     // Apply the selected configuration
@@ -846,7 +859,8 @@ namespace TelegramChatViewer
                 ShowLoadingUI(true, "Loading messages...");
                 UpdateProgress(30, "Loading messages...");
 
-                var (messages, chatName) = await _messageParser.LoadChatFileAsync(filePath);
+                // Use parallel parser for better performance on high-end hardware
+                var (messages, chatName) = await _parallelMessageParser.LoadChatFileAsync(filePath);
                 _allMessages = messages;
                 _chatName = chatName;
                 
