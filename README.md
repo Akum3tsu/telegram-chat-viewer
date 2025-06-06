@@ -2,7 +2,7 @@
 
 # DISCLAIMER
 
-The entire project, code ,examples , even this readme are the result of on-going vibe coding with less as possible action by a real person.
+The entire project, code , examples and even everything below the disclaimer of this readme are the result of on-going vibe coding using [Cursor AI](https://www.cursor.com/) with less as possible action by a real person.
 
 Goal of this approach is to explore and understand how much an AI today can do even with little to nothing help from an experienced (and especially a beginner) programmer.
 
