@@ -5,7 +5,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
-    <ApplicationIcon>Resources\telegram_chat_viewer.ico</ApplicationIcon>
+
     <AssemblyTitle>Telegram Chat Viewer</AssemblyTitle>
     <AssemblyDescription>A high-performance desktop application for viewing Telegram chat exports</AssemblyDescription>
     <AssemblyVersion>0.1.17</AssemblyVersion>
@@ -25,9 +25,7 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Resource Include="Resources\telegram_chat_viewer.ico" />
-  </ItemGroup>
+
 
 </Project> 
 
