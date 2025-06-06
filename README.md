@@ -2,11 +2,11 @@
 
 # DISCLAIMER
 
-The entire project, code ,examples , even this readme are the result of on-going vibe coding with less as possible refinement by a person.
+The entire project, code ,examples , even this readme are the result of on-going vibe coding with less as possible action by a real person.
 
-Goal of this approach is to explore and understand how much an AI today can do even with little to nothing help from an experienced (and even a beginner) programmer.
+Goal of this approach is to explore and understand how much an AI today can do even with little to nothing help from an experienced (and especially a beginner) programmer.
 
-Feel free to fork this project to your liking, hoping that it will be helpful to somebody else project as well :)  
+Feel free to fork this project to your liking, hoping this will be helpful to somebody else project as well :)  
 
 ---------------------------------------------
 # Telegram Chat Viewer
