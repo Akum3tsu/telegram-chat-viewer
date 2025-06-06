@@ -1705,6 +1705,11 @@ namespace TelegramChatViewer
             if (File.Exists(audioPath))
             {
                 var fileExtension = Path.GetExtension(audioPath).ToLower();
+                var fileInfo = new FileInfo(audioPath);
+                
+                _logger.Info($"Voice message file found: {audioPath}");
+                _logger.Info($"File extension: {fileExtension}, Size: {fileInfo.Length} bytes");
+                
                 var isPlaying = false;
                 IWavePlayer wavePlayer = null;
                 AudioFileReader audioFileReader = null;
@@ -1758,8 +1763,20 @@ namespace TelegramChatViewer
                             // Try NAudio for OGG and other formats first
                             if (fileExtension == ".ogg" || fileExtension == ".oga")
                             {
+                                _logger.Info($"Attempting to play OGG file: {audioPath}");
+                                
+                                // Check if file is not empty
+                                if (fileInfo.Length == 0)
+                                {
+                                    throw new InvalidOperationException("OGG file is empty");
+                                }
+                                
                                 // Use NAudio.Vorbis for OGG files
                                 vorbisReader = new VorbisWaveReader(audioPath);
+                                
+                                // Log audio format details
+                                _logger.Info($"OGG format - Channels: {vorbisReader.WaveFormat.Channels}, SampleRate: {vorbisReader.WaveFormat.SampleRate}, Length: {vorbisReader.TotalTime}");
+                                
                                 wavePlayer = new WaveOutEvent();
                                 
                                 wavePlayer.PlaybackStopped += (sender, args) =>
@@ -1775,9 +1792,13 @@ namespace TelegramChatViewer
                                 wavePlayer.Init(vorbisReader);
                                 wavePlayer.Volume = 0.7f;
                                 wavePlayer.Play();
+                                
+                                _logger.Info($"OGG playback started successfully for: {audioPath}");
                             }
                             else
                             {
+                                _logger.Info($"Attempting to play audio file: {audioPath}");
+                                
                                 // Use NAudio for other formats (MP3, WAV, etc.)
                                 audioFileReader = new AudioFileReader(audioPath);
                                 wavePlayer = new WaveOutEvent();
@@ -1795,14 +1816,24 @@ namespace TelegramChatViewer
                                 wavePlayer.Init(audioFileReader);
                                 wavePlayer.Volume = 0.7f;
                                 wavePlayer.Play();
+                                
+                                _logger.Info($"Audio playback started successfully for: {audioPath}");
                             }
                         }
                         catch (Exception ex)
                         {
-                            _logger.Error($"NAudio playback failed: {ex.Message}");
+                            _logger.Error($"NAudio playback failed for {audioPath}: {ex.Message}", ex);
                             isPlaying = false;
                             updatePlayButton();
                             cleanup();
+
+                            // Show specific error for OGG files
+                            if (fileExtension == ".ogg" || fileExtension == ".oga")
+                            {
+                                MessageBox.Show($"Failed to play OGG voice message.\n\nError: {ex.Message}\n\nFile: {audioPath}\n\nTry checking if the file exists and is not corrupted.", 
+                                    "OGG Playback Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                                return;
+                            }
 
                             // Fallback to MediaElement for basic formats
                             try
