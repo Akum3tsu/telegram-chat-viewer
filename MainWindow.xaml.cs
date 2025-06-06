@@ -1578,8 +1578,9 @@ namespace TelegramChatViewer
 
             // Remove the length limitation for better readability - let text wrapping handle it
             // This allows users to see the full context of what they're replying to
+            // Return just the preview content since sender name is shown in the enhanced quote display
             
-            return $"↩️ {originalMessage.DisplaySender}: {preview}";
+            return preview;
         }
 
         private UIElement CreateMediaElement(TelegramMessage message)
