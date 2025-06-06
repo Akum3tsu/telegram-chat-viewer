@@ -102,16 +102,14 @@ jobs:
           --no-restore
       working-directory: ${{ env.Project_Directory }}
 
-
-
     # Run tests if they exist
     - name: Run tests
       run: dotnet test $env:Solution_Name --configuration ${{ matrix.configuration }} --no-build --logger trx --results-directory "TestResults"
       working-directory: ${{ env.Project_Directory }}
       continue-on-error: true
 
-    # Get version information
-    - name: Get Version
+    # Get version information and extract changelog
+    - name: Get Version and Changelog
       id: version
       shell: pwsh
       run: |
@@ -133,6 +131,31 @@ jobs:
           echo "TAG_EXISTS=false" >> $env:GITHUB_OUTPUT
           echo "Tag v$version does not exist"
         }
+        
+        # Extract changelog for current version
+        $changelogContent = ""
+        if (Test-Path "CHANGELOG.md") {
+          $changelog = Get-Content "CHANGELOG.md" -Raw
+          
+          # Extract content between current version and next version/end
+          $pattern = "(?s)## \[$version\].*?(?=## \[|\z)"
+          $match = [regex]::Match($changelog, $pattern)
+          
+          if ($match.Success) {
+            $changelogContent = $match.Value
+            # Remove the version header line for cleaner release notes
+            $changelogContent = $changelogContent -replace "## \[$version\] - \d{4}-\d{2}-\d{2}", ""
+            $changelogContent = $changelogContent.Trim()
+          } else {
+            $changelogContent = "Release notes for version $version"
+          }
+        } else {
+          $changelogContent = "Release notes for version $version"
+        }
+        
+        # Save changelog to file for use in release
+        $changelogContent | Out-File -FilePath "release-notes.md" -Encoding UTF8
+        echo "Extracted changelog for version $version"
 
     # Create and push tag if it doesn't exist and we're on main branch
     - name: Create and Push Tag
@@ -168,6 +191,9 @@ jobs:
         if (Test-Path "README.md") {
           Copy-Item "README.md" "./$tempDir/"
         }
+        if (Test-Path "CHANGELOG.md") {
+          Copy-Item "CHANGELOG.md" "./$tempDir/"
+        }
         if (Test-Path "FEATURES.md") {
           Copy-Item "FEATURES.md" "./$tempDir/"
         }
@@ -193,39 +219,7 @@ jobs:
       with:
         tag_name: v${{ steps.version.outputs.VERSION }}
         name: Telegram Chat Viewer ${{ steps.version.outputs.VERSION }}
-        body: |
-          # Telegram Chat Viewer ${{ steps.version.outputs.VERSION }}
-          
-          ## 🚀 What's New
-          - Advanced text selection (individual and multi-message)
-          - User-based alternating message layout
-          - Performance optimization for massive datasets (100k+ messages)
-          - Rich media support (voice, stickers, videos, photos)
-          - Real-time search with keyboard navigation
-          - Light/dark theme support
-          
-          ## 📦 Download
-          
-          - **TelegramChatViewer-v${{ steps.version.outputs.VERSION }}.zip** - Complete package with executable and documentation
-          
-          ## 🛠️ System Requirements
-          - Windows 10/11 (x64)
-          - .NET 8.0 Runtime (included in single-file executable)
-          
-          ## 📋 Features
-          - **Text Selection**: Select any text element (usernames, messages, timestamps)
-          - **Multi-Message Selection**: `Ctrl+Shift+A` to select multiple messages
-          - **Performance**: Handles massive chat files (100k+ messages)
-          - **Search**: Real-time search with F3/Shift+F3 navigation
-          - **Themes**: Light and dark mode support
-          
-          ## 🔧 Usage
-          1. Download and extract the zip file
-          2. Run `TelegramChatViewer.exe` directly (no installation needed)
-          3. Click "Load Chat" and select your Telegram JSON export
-          4. Use `Ctrl+Shift+A` for multi-message selection
-          
-          Full documentation available in the repository.
+        body_path: release-notes.md
         files: ./release/TelegramChatViewer-v${{ steps.version.outputs.VERSION }}.zip
         draft: false
         prerelease: false
