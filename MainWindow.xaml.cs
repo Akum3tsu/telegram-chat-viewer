@@ -1882,6 +1882,70 @@ namespace TelegramChatViewer
 
         private UIElement CreateStickerElement(TelegramMessage message)
         {
+            var stickerContainer = new StackPanel();
+            
+            // Get the sticker path - check both File and Thumbnail
+            string stickerPath = !string.IsNullOrEmpty(message.File) ? message.File : message.Thumbnail;
+            
+            if (!string.IsNullOrEmpty(stickerPath))
+            {
+                // Build full path relative to JSON file directory
+                string fullPath = Path.IsPathRooted(stickerPath) ? stickerPath : Path.Combine(_jsonFileDirectory, stickerPath);
+                
+                if (File.Exists(fullPath))
+                {
+                    try
+                    {
+                        // Display the actual sticker image - borderless for clean look
+                        var image = new Image
+                        {
+                            Source = new BitmapImage(new Uri(fullPath, UriKind.Absolute)),
+                            MaxWidth = 200, // Reasonable sticker size
+                            MaxHeight = 200,
+                            Stretch = Stretch.Uniform,
+                            Margin = new Thickness(0, 0, 0, 5),
+                            Cursor = Cursors.Hand
+                        };
+                        
+                        // Add click handler to open in external viewer
+                        image.MouseLeftButtonUp += (s, e) => 
+                        {
+                            try
+                            {
+                                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(fullPath) { UseShellExecute = true });
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.Error($"Failed to open sticker: {ex.Message}");
+                            }
+                        };
+                        
+                        stickerContainer.Children.Add(image);
+                        
+                        // Add sticker info below if emoji is available
+                        if (!string.IsNullOrEmpty(message.StickerEmoji))
+                        {
+                            var infoText = new TextBlock
+                            {
+                                Text = $"{message.StickerEmoji} Sticker",
+                                FontSize = 10,
+                                Foreground = GetCachedResource("SecondaryText"),
+                                FontStyle = FontStyles.Italic,
+                                HorizontalAlignment = HorizontalAlignment.Center
+                            };
+                            stickerContainer.Children.Add(infoText);
+                        }
+                        
+                        return stickerContainer;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error($"Failed to load sticker {fullPath}: {ex.Message}");
+                    }
+                }
+            }
+            
+            // Fallback to emoji-based display if sticker can't be loaded
             var stickerPanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal
@@ -1901,7 +1965,8 @@ namespace TelegramChatViewer
             
             var titleText = new TextBlock
             {
-                Text = "Sticker",
+                Text = File.Exists(Path.IsPathRooted(stickerPath) ? stickerPath : Path.Combine(_jsonFileDirectory, stickerPath ?? "")) 
+                    ? "Sticker" : "Sticker (not found)",
                 FontWeight = FontWeights.SemiBold,
                 FontSize = 12,
                 Foreground = GetCachedResource("PrimaryText")
