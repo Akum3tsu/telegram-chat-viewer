@@ -7,7 +7,7 @@
         MinHeight="600"
         MinWidth="800"
         WindowStartupLocation="CenterScreen"
-        >
+        Icon="Resources/telegram_chat_viewer.ico">
     
     <Window.Resources>
         <!-- Light Theme (Telegram Default) -->
