@@ -1567,21 +1567,10 @@ namespace TelegramChatViewer
 
         private UIElement CreateMediaElement(TelegramMessage message)
         {
-            var mediaContainer = new Border
-            {
-                Background = GetCachedResource("SecondaryBackground"),
-                CornerRadius = new CornerRadius(8),
-                Padding = new Thickness(12),
-                Margin = new Thickness(0, 0, 0, 8),
-                MaxWidth = 400
-            };
-
-            var mediaPanel = new StackPanel();
-
             // Check for photo first (even if MediaType is not set)
             if (!string.IsNullOrEmpty(message.Photo))
             {
-                mediaPanel.Children.Add(CreatePhotoElement(message));
+                return CreatePhotoElement(message);
             }
             else
             {
@@ -1589,38 +1578,49 @@ namespace TelegramChatViewer
                 {
                     case "voice_message":
                     case "voice_note":
-                        mediaPanel.Children.Add(CreateVoiceMessageElement(message));
-                        break;
+                        // Keep border for voice messages as they need the interactive UI
+                        var voiceContainer = new Border
+                        {
+                            Background = GetCachedResource("SecondaryBackground"),
+                            CornerRadius = new CornerRadius(8),
+                            Padding = new Thickness(12),
+                            Margin = new Thickness(0, 0, 0, 8),
+                            MaxWidth = 400
+                        };
+                        var voiceElement = CreateVoiceMessageElement(message);
+                        voiceContainer.Child = voiceElement;
+                        return voiceContainer;
                     
                     case "sticker":
-                        mediaPanel.Children.Add(CreateStickerElement(message));
-                        break;
+                        return CreateStickerElement(message);
                     
                     case "animation":
-                        mediaPanel.Children.Add(CreateAnimationElement(message));
-                        break;
+                        return CreateAnimationElement(message);
                     
                     case "video":
-                        mediaPanel.Children.Add(CreateVideoElement(message));
-                        break;
+                        return CreateVideoElement(message);
                     
                     case "photo":
-                        mediaPanel.Children.Add(CreatePhotoElement(message));
-                        break;
+                        return CreatePhotoElement(message);
                     
                     default:
                         if (!string.IsNullOrEmpty(message.File))
                         {
-                            mediaPanel.Children.Add(CreateGenericFileElement(message));
+                            // Keep border for generic files as they need the info UI
+                            var fileContainer = new Border
+                            {
+                                Background = GetCachedResource("SecondaryBackground"),
+                                CornerRadius = new CornerRadius(8),
+                                Padding = new Thickness(12),
+                                Margin = new Thickness(0, 0, 0, 8),
+                                MaxWidth = 400
+                            };
+                            var fileElement = CreateGenericFileElement(message);
+                            fileContainer.Child = fileElement;
+                            return fileContainer;
                         }
                         break;
                 }
-            }
-
-            if (mediaPanel.Children.Count > 0)
-            {
-                mediaContainer.Child = mediaPanel;
-                return mediaContainer;
             }
 
             return null;
@@ -1628,18 +1628,22 @@ namespace TelegramChatViewer
 
         private UIElement CreateVoiceMessageElement(TelegramMessage message)
         {
-            var voiceContainer = new Border
-            {
-                Background = GetCachedResource("SecondaryBackground"),
-                CornerRadius = new CornerRadius(8),
-                Padding = new Thickness(12),
-                MaxWidth = 300,
-                Cursor = Cursors.Hand
-            };
+            var voicePanel = new StackPanel();
             
-            var voicePanel = new StackPanel
+            // Build the audio file path
+            string audioPath = "";
+            if (!string.IsNullOrEmpty(message.File))
             {
-                Orientation = Orientation.Horizontal
+                audioPath = Path.IsPathRooted(message.File) ? 
+                    message.File : 
+                    Path.Combine(_jsonFileDirectory, message.File);
+            }
+
+            // Control panel with play button and info
+            var controlPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Margin = new Thickness(0, 0, 0, 5)
             };
 
             // Play button
@@ -1654,7 +1658,7 @@ namespace TelegramChatViewer
                 BorderThickness = new Thickness(1),
                 VerticalAlignment = VerticalAlignment.Center,
                 Margin = new Thickness(0, 0, 10, 0),
-                Style = null // Remove default button styling
+                Style = null
             };
 
             // Voice info
@@ -1692,55 +1696,103 @@ namespace TelegramChatViewer
             voiceInfo.Children.Add(durationText);
             voiceInfo.Children.Add(fileNameText);
 
-            voicePanel.Children.Add(playButton);
-            voicePanel.Children.Add(voiceInfo);
-            
-            voiceContainer.Child = voicePanel;
+            controlPanel.Children.Add(playButton);
+            controlPanel.Children.Add(voiceInfo);
+            voicePanel.Children.Add(controlPanel);
 
-            // Add click handlers to play the audio
-            Action<object, RoutedEventArgs> playAudio = (s, e) => 
+            // Add built-in media player
+            if (File.Exists(audioPath))
             {
-                if (!string.IsNullOrEmpty(message.File))
+                try
                 {
-                    string audioPath = Path.IsPathRooted(message.File) ? 
-                        message.File : 
-                        Path.Combine(_jsonFileDirectory, message.File);
-                        
-                    if (File.Exists(audioPath))
+                    var mediaElement = new MediaElement
+                    {
+                        Source = new Uri(audioPath, UriKind.Absolute),
+                        LoadedBehavior = MediaState.Manual,
+                        UnloadedBehavior = MediaState.Manual,
+                        Volume = 0.7,
+                        Visibility = Visibility.Collapsed // Hidden but functional
+                    };
+
+                    var isPlaying = false;
+                    
+                    // Update play button based on state
+                    Action updatePlayButton = () =>
+                    {
+                        playButton.Content = isPlaying ? "⏸️" : "▶️";
+                    };
+
+                    // Media event handlers
+                    mediaElement.MediaEnded += (s, e) =>
+                    {
+                        isPlaying = false;
+                        updatePlayButton();
+                        mediaElement.Stop();
+                    };
+
+                    mediaElement.MediaFailed += (s, e) =>
+                    {
+                        _logger.Error($"Media playback failed: {e.ErrorException?.Message}");
+                        isPlaying = false;
+                        updatePlayButton();
+                    };
+
+                    // Play button click handler
+                    playButton.Click += (s, e) =>
                     {
                         try
                         {
-                            // Try to play with default audio player
-                            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(audioPath) { UseShellExecute = true });
+                            if (isPlaying)
+                            {
+                                mediaElement.Pause();
+                                isPlaying = false;
+                            }
+                            else
+                            {
+                                mediaElement.Play();
+                                isPlaying = true;
+                            }
+                            updatePlayButton();
                         }
                         catch (Exception ex)
                         {
-                            _logger.Error($"Failed to play audio: {ex.Message}");
-                            
-                            // Try alternative method using Windows Media Player
-                            try
-                            {
-                                System.Diagnostics.Process.Start("wmplayer.exe", $"\"{audioPath}\"");
-                            }
-                            catch (Exception ex2)
-                            {
-                                _logger.Error($"Failed to play audio with wmplayer: {ex2.Message}");
-                                MessageBox.Show($"Could not play audio file. Please ensure you have an audio player installed.\n\nFile: {audioPath}", 
-                                    "Audio Playback Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                            }
+                            _logger.Error($"Failed to toggle playback: {ex.Message}");
+                            MessageBox.Show($"Could not play audio file.\n\nFile: {audioPath}", 
+                                "Audio Playback Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                         }
-                    }
-                    else
-                    {
-                        MessageBox.Show($"Audio file not found: {audioPath}", "File Not Found", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    }
-                }
-            };
-            
-            playButton.Click += new RoutedEventHandler(playAudio);
-            voiceContainer.MouseLeftButtonUp += (s, e) => playAudio(s, new RoutedEventArgs());
+                    };
 
-            return voiceContainer;
+                    voicePanel.Children.Add(mediaElement);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error($"Failed to create media element: {ex.Message}");
+                    // Fallback to external player
+                    playButton.Click += (s, e) =>
+                    {
+                        try
+                        {
+                            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(audioPath) { UseShellExecute = true });
+                        }
+                        catch (Exception ex2)
+                        {
+                            _logger.Error($"Failed to play audio externally: {ex2.Message}");
+                            MessageBox.Show($"Could not play audio file.\n\nFile: {audioPath}", 
+                                "Audio Playback Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        }
+                    };
+                }
+            }
+            else
+            {
+                // File not found - fallback behavior
+                playButton.Click += (s, e) =>
+                {
+                    MessageBox.Show($"Audio file not found: {audioPath}", "File Not Found", MessageBoxButton.OK, MessageBoxImage.Warning);
+                };
+            }
+
+            return voicePanel;
         }
 
         private UIElement CreateStickerElement(TelegramMessage message)
@@ -1812,28 +1864,19 @@ namespace TelegramChatViewer
                 {
                     try
                     {
-                        // Try to display as animated image (WPF supports GIF animation)
+                        // Try to display as animated image (WPF supports GIF animation) - borderless for cleaner look
                         var image = new Image
                         {
                             Source = new BitmapImage(new Uri(fullPath, UriKind.Absolute)),
                             MaxWidth = 350,
                             MaxHeight = 250,
                             Stretch = Stretch.Uniform,
-                            Margin = new Thickness(0, 0, 0, 5)
+                            Margin = new Thickness(0, 0, 0, 5),
+                            Cursor = Cursors.Hand
                         };
                         
-                        // Add border for better visual appearance
-                        var imageBorder = new Border
-                        {
-                            Child = image,
-                            CornerRadius = new CornerRadius(8),
-                            BorderBrush = GetCachedResource("SecondaryText"),
-                            BorderThickness = new Thickness(1),
-                            Margin = new Thickness(0, 0, 0, 5)
-                        };
-                        
-                        // Add click handler to open in external viewer
-                        imageBorder.MouseLeftButtonUp += (s, e) => 
+                        // Add click handler to open in external viewer (directly on image)
+                        image.MouseLeftButtonUp += (s, e) => 
                         {
                             try
                             {
@@ -1844,9 +1887,8 @@ namespace TelegramChatViewer
                                 _logger.Error($"Failed to open animation: {ex.Message}");
                             }
                         };
-                        imageBorder.Cursor = Cursors.Hand;
                         
-                        animationContainer.Children.Add(imageBorder);
+                        animationContainer.Children.Add(image);
                         
                         // Add animation info below
                         var infoText = new TextBlock
@@ -1919,12 +1961,164 @@ namespace TelegramChatViewer
 
         private UIElement CreateVideoElement(TelegramMessage message)
         {
+            var videoContainer = new StackPanel();
+            
+            // Build the video file path
+            string videoPath = "";
+            if (!string.IsNullOrEmpty(message.File))
+            {
+                videoPath = Path.IsPathRooted(message.File) ? 
+                    message.File : 
+                    Path.Combine(_jsonFileDirectory, message.File);
+            }
+
+            if (File.Exists(videoPath))
+            {
+                try
+                {
+                    // Create built-in video player with preview thumbnail
+                    var mediaElement = new MediaElement
+                    {
+                        Source = new Uri(videoPath, UriKind.Absolute),
+                        LoadedBehavior = MediaState.Manual,
+                        UnloadedBehavior = MediaState.Manual,
+                        Volume = 0.7,
+                        MaxWidth = 400,
+                        MaxHeight = 300,
+                        Stretch = Stretch.Uniform,
+                        Margin = new Thickness(0, 0, 0, 5)
+                    };
+
+                    var isPlaying = false;
+                    var hasLoaded = false;
+
+                    // Control panel overlay
+                    var controlGrid = new Grid();
+                    
+                    // Add media element to grid
+                    controlGrid.Children.Add(mediaElement);
+
+                    // Play overlay button (visible when not playing)
+                    var playOverlay = new Button
+                    {
+                        Content = "▶️",
+                        FontSize = 48,
+                        Background = new SolidColorBrush(Color.FromArgb(128, 0, 0, 0)),
+                        Foreground = Brushes.White,
+                        BorderThickness = new Thickness(0),
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        Width = 80,
+                        Height = 80,
+                        Opacity = 0.8,
+                        Cursor = Cursors.Hand
+                    };
+
+                    controlGrid.Children.Add(playOverlay);
+
+                    // Media event handlers
+                    mediaElement.MediaOpened += (s, e) =>
+                    {
+                        hasLoaded = true;
+                        // Load first frame as thumbnail
+                        mediaElement.Position = TimeSpan.FromSeconds(0);
+                        mediaElement.Pause();
+                    };
+
+                    mediaElement.MediaEnded += (s, e) =>
+                    {
+                        isPlaying = false;
+                        playOverlay.Content = "▶️";
+                        playOverlay.Visibility = Visibility.Visible;
+                        mediaElement.Stop();
+                    };
+
+                    mediaElement.MediaFailed += (s, e) =>
+                    {
+                        _logger.Error($"Video playback failed: {e.ErrorException?.Message}");
+                        // Fallback to external player
+                        playOverlay.Content = "📹";
+                        playOverlay.Click += (sender, args) =>
+                        {
+                            try
+                            {
+                                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(videoPath) { UseShellExecute = true });
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.Error($"Failed to open video externally: {ex.Message}");
+                                MessageBox.Show($"Could not play video file.\n\nFile: {videoPath}", "Video Playback Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            }
+                        };
+                    };
+
+                    // Play button click handler
+                    playOverlay.Click += (s, e) =>
+                    {
+                        try
+                        {
+                            if (!hasLoaded)
+                            {
+                                mediaElement.Play(); // This will trigger MediaOpened
+                                return;
+                            }
+
+                            if (isPlaying)
+                            {
+                                mediaElement.Pause();
+                                isPlaying = false;
+                                playOverlay.Content = "▶️";
+                                playOverlay.Visibility = Visibility.Visible;
+                            }
+                            else
+                            {
+                                mediaElement.Play();
+                                isPlaying = true;
+                                playOverlay.Content = "⏸️";
+                                playOverlay.Visibility = Visibility.Collapsed;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Error($"Failed to toggle video playback: {ex.Message}");
+                            MessageBox.Show($"Could not play video file.\n\nFile: {videoPath}", "Video Playback Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        }
+                    };
+
+                    // Click on video to toggle playback
+                    mediaElement.MouseLeftButtonUp += (s, e) =>
+                    {
+                        playOverlay.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                    };
+
+                    videoContainer.Children.Add(controlGrid);
+
+                    // Add video info below
+                    var infoText = new TextBlock
+                    {
+                        Text = $"📹 {GetMediaDetailsText(message)}",
+                        FontSize = 10,
+                        Foreground = GetCachedResource("SecondaryText"),
+                        FontStyle = FontStyles.Italic,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        Margin = new Thickness(0, 5, 0, 0)
+                    };
+                    videoContainer.Children.Add(infoText);
+
+                    return videoContainer;
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error($"Failed to create video element: {ex.Message}");
+                }
+            }
+
+            // Fallback to simple info panel if video can't be loaded
             var videoPanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal
             };
 
-            // Video icon with play button look
             var videoIcon = new Button
             {
                 Content = "📹▶️",
@@ -1936,12 +2130,11 @@ namespace TelegramChatViewer
                 Cursor = Cursors.Hand
             };
 
-            // Video info
             var videoInfo = new StackPanel();
             
             var titleText = new TextBlock
             {
-                Text = "Video",
+                Text = File.Exists(videoPath) ? "Video" : "Video (not found)",
                 FontWeight = FontWeights.SemiBold,
                 FontSize = 12,
                 Foreground = GetCachedResource("PrimaryText")
@@ -1969,35 +2162,26 @@ namespace TelegramChatViewer
             videoPanel.Children.Add(videoIcon);
             videoPanel.Children.Add(videoInfo);
 
-            // Add click handler to play video
-            Action playVideo = () => 
+            // Fallback click handler
+            videoIcon.Click += (s, e) =>
             {
-                if (!string.IsNullOrEmpty(message.File))
+                if (File.Exists(videoPath))
                 {
-                    string videoPath = Path.IsPathRooted(message.File) ? 
-                        message.File : 
-                        Path.Combine(_jsonFileDirectory, message.File);
-                        
-                    if (File.Exists(videoPath))
+                    try
                     {
-                        try
-                        {
-                            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(videoPath) { UseShellExecute = true });
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.Error($"Failed to play video: {ex.Message}");
-                            MessageBox.Show($"Could not play video file.\n\nFile: {videoPath}", "Video Playback Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        }
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(videoPath) { UseShellExecute = true });
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        MessageBox.Show($"Video file not found: {videoPath}", "File Not Found", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        _logger.Error($"Failed to play video: {ex.Message}");
+                        MessageBox.Show($"Could not play video file.\n\nFile: {videoPath}", "Video Playback Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                     }
                 }
+                else
+                {
+                    MessageBox.Show($"Video file not found: {videoPath}", "File Not Found", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
             };
-            
-            videoIcon.Click += (s, e) => playVideo();
 
             return videoPanel;
         }
@@ -2375,21 +2559,12 @@ namespace TelegramChatViewer
                             MaxWidth = 400,
                             MaxHeight = 300,
                             Stretch = Stretch.Uniform,
-                            Margin = new Thickness(0, 0, 0, 5)
+                            Margin = new Thickness(0, 0, 0, 5),
+                            Cursor = Cursors.Hand
                         };
                         
-                        // Add border for better visual appearance
-                        var imageBorder = new Border
-                        {
-                            Child = image,
-                            CornerRadius = new CornerRadius(8),
-                            BorderBrush = GetCachedResource("SecondaryText"),
-                            BorderThickness = new Thickness(1),
-                            Margin = new Thickness(0, 0, 0, 5)
-                        };
-                        
-                        // Add click handler to open in external viewer
-                        imageBorder.MouseLeftButtonUp += (s, e) => 
+                        // Add click handler to open in external viewer (directly on image, no border)
+                        image.MouseLeftButtonUp += (s, e) => 
                         {
                             try
                             {
@@ -2400,9 +2575,8 @@ namespace TelegramChatViewer
                                 _logger.Error($"Failed to open image: {ex.Message}");
                             }
                         };
-                        imageBorder.Cursor = Cursors.Hand;
                         
-                        photoContainer.Children.Add(imageBorder);
+                        photoContainer.Children.Add(image);
                         
                         // Add image info below
                         var infoText = new TextBlock
