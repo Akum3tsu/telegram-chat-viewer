@@ -404,10 +404,20 @@ namespace TelegramChatViewer.Services
             };
         }
 
-        public static string GetReplyPreviewText(TelegramMessage originalMessage, int maxLength = 50)
+        public static string GetReplyPreviewText(TelegramMessage originalMessage, int maxLength = 0)
         {
             if (originalMessage == null)
                 return "Original message not found";
+
+            // Handle service messages (actions like joining, leaving, etc.)
+            if (originalMessage.IsServiceMessage)
+            {
+                return FormatServiceMessage(
+                    originalMessage.Actor, 
+                    originalMessage.Action, 
+                    originalMessage.Title, 
+                    originalMessage.Members);
+            }
 
             var text = originalMessage.PlainText;
 
@@ -429,10 +439,9 @@ namespace TelegramChatViewer.Services
                 return "Message";
             }
 
-            if (text.Length <= maxLength)
-                return text;
-
-            return text.Substring(0, maxLength - 3) + "...";
+            // Return full text for better readability - truncation removed
+            // Let the UI handle text wrapping instead of cutting off content
+            return text;
         }
 
         public static MediaInfo GetMediaInfo(TelegramMessage message)

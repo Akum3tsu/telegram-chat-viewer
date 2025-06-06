@@ -479,13 +479,23 @@
                 <StackPanel HorizontalAlignment="Center" 
                            VerticalAlignment="Center"
                            MaxWidth="600">
-                    <TextBlock Text="🚀 Telegram Chat Viewer"
-                               FontFamily="Segoe UI"
-                               FontSize="28"
-                               FontWeight="Bold"
-                               Foreground="Black"
-                               HorizontalAlignment="Center"
-                               Margin="0,0,0,30"/>
+                    <StackPanel HorizontalAlignment="Center" Margin="0,0,0,30">
+                        <Image Source="/Resources/splash_icon.png" 
+                               Width="96" 
+                               Height="96"
+                               HorizontalAlignment="Center" 
+                               Margin="0,0,0,20">
+                            <Image.Effect>
+                                <DropShadowEffect Color="#FF42ABEE" BlurRadius="10" ShadowDepth="0" Opacity="0.5"/>
+                            </Image.Effect>
+                        </Image>
+                        <TextBlock Text="Telegram Chat Viewer"
+                                   FontFamily="Segoe UI"
+                                   FontSize="28"
+                                   FontWeight="Bold"
+                                   Foreground="Black"
+                                   HorizontalAlignment="Center"/>
+                    </StackPanel>
                     
                     <TextBlock TextWrapping="Wrap"
                                FontFamily="Segoe UI"
