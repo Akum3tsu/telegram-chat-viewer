@@ -129,6 +129,28 @@ jobs:
         }
         echo "VERSION=$version" >> $env:GITHUB_OUTPUT
         echo "Version: $version"
+        
+        # Check if this version tag already exists
+        $tagExists = git tag -l "v$version"
+        if ($tagExists) {
+          echo "TAG_EXISTS=true" >> $env:GITHUB_OUTPUT
+          echo "Tag v$version already exists"
+        } else {
+          echo "TAG_EXISTS=false" >> $env:GITHUB_OUTPUT
+          echo "Tag v$version does not exist"
+        }
+
+    # Create and push tag if it doesn't exist and we're on main branch
+    - name: Create and Push Tag
+      if: github.ref == 'refs/heads/main' && steps.version.outputs.TAG_EXISTS == 'false'
+      shell: pwsh
+      run: |
+        $version = "${{ steps.version.outputs.VERSION }}"
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git tag -a "v$version" -m "Release version $version"
+        git push origin "v$version"
+        echo "Created and pushed tag v$version"
 
     # Create artifacts
     - name: Create Release Artifacts
@@ -196,11 +218,12 @@ jobs:
           ./release/FEATURES.md
         retention-days: 90
 
-    # Create GitHub Release on tag push
+    # Create GitHub Release on tag push or when new tag was created
     - name: Create GitHub Release
-      if: startsWith(github.ref, 'refs/tags/v')
+      if: startsWith(github.ref, 'refs/tags/v') || (github.ref == 'refs/heads/main' && steps.version.outputs.TAG_EXISTS == 'false')
       uses: softprops/action-gh-release@v1
       with:
+        tag_name: v${{ steps.version.outputs.VERSION }}
         name: Telegram Chat Viewer ${{ steps.version.outputs.VERSION }}
         body: |
           # Telegram Chat Viewer ${{ steps.version.outputs.VERSION }}
