@@ -300,7 +300,7 @@ namespace TelegramChatViewer.Services
             // Enable advanced features for high-end hardware
             config.UseMassiveLoad = settings.UseBulkOperations;
             config.UseVirtualScrolling = estimatedMessageCount > 5000;
-            config.UseAlternatingLayout = estimatedMessageCount > 20000;
+            config.UseAlternatingLayout = true; // Always enable alternating layout for better readability
             
             _logger.Info($"Generated optimized config for {_hardwareProfile.Tier} hardware: " +
                         $"Strategy={config.LoadingStrategy}, ChunkSize={config.ChunkSize}, " +
