@@ -61,7 +61,7 @@ namespace TelegramChatViewer
         // Member colors
         private readonly Dictionary<string, Brush> _memberColors = new Dictionary<string, Brush>();
         
-        // Color palettes for light/dark themes
+        // Color palette for light theme
         private readonly Brush[] _lightColorPalette = {
             new SolidColorBrush(Color.FromRgb(0xB8, 0x1C, 0x1C)),
             new SolidColorBrush(Color.FromRgb(0x1B, 0x5E, 0x20)),
@@ -70,19 +70,10 @@ namespace TelegramChatViewer
             new SolidColorBrush(Color.FromRgb(0x6A, 0x1B, 0x9A))
         };
 
-        private readonly Brush[] _darkColorPalette = {
-            new SolidColorBrush(Color.FromRgb(0xFF, 0x8A, 0x8A)),
-            new SolidColorBrush(Color.FromRgb(0x8A, 0xFF, 0x8A)),
-            new SolidColorBrush(Color.FromRgb(0x8A, 0x8A, 0xFF)),
-            new SolidColorBrush(Color.FromRgb(0xFF, 0xCC, 0x80)),
-            new SolidColorBrush(Color.FromRgb(0xFF, 0x8A, 0xFF))
-        };
-
-        private Brush[] _colorPalette => _isLightMode ? _lightColorPalette : _darkColorPalette;
+        private Brush[] _colorPalette => _lightColorPalette;
 
         // Layout options
         private bool _useAlternatingLayout = true;
-        private bool _isLightMode = true;
         private bool _useMassiveLoad = false;
 
         // User-based alternating layout tracking
@@ -254,12 +245,7 @@ namespace TelegramChatViewer
             }
         }
 
-        private void LightModeMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            _isLightMode = ((MenuItem)sender).IsChecked;
-            _logger.Info($"Light mode: {(_isLightMode ? "enabled" : "disabled")}");
-            SwitchTheme(_isLightMode);
-        }
+
 
         private void OpenLogMenuItem_Click(object sender, RoutedEventArgs e)
         {
@@ -403,7 +389,7 @@ namespace TelegramChatViewer
                 var suggestedConfig = _performanceOptimizer.GetOptimizedLoadingConfig(fileSizeMB, estimatedMessageCount);
                 
                 // Show loading configuration dialog with suggestions
-                var configDialog = new LoadingConfigDialog(openFileDialog.FileName, fileSizeMB, estimatedMessageCount, _isLightMode);
+                var configDialog = new LoadingConfigDialog(openFileDialog.FileName, fileSizeMB, estimatedMessageCount, true);
                 configDialog.SetSuggestedConfiguration(suggestedConfig);
                 
                 if (configDialog.ShowDialog() == true && !configDialog.WasCancelled)
@@ -1361,21 +1347,13 @@ namespace TelegramChatViewer
                         break;
                     case "code":
                         run.FontFamily = new FontFamily("Consolas, Monaco, 'Courier New', monospace");
-                        run.Background = _isLightMode 
-                            ? new SolidColorBrush(Color.FromRgb(240, 240, 240))
-                            : new SolidColorBrush(Color.FromRgb(45, 45, 45));
-                        run.Foreground = _isLightMode
-                            ? new SolidColorBrush(Color.FromRgb(199, 37, 78))
-                            : new SolidColorBrush(Color.FromRgb(255, 125, 125));
+                        run.Background = new SolidColorBrush(Color.FromRgb(240, 240, 240));
+                        run.Foreground = new SolidColorBrush(Color.FromRgb(199, 37, 78));
                         break;
                     case "pre":
                         run.FontFamily = new FontFamily("Consolas, Monaco, 'Courier New', monospace");
-                        run.Background = _isLightMode
-                            ? new SolidColorBrush(Color.FromRgb(245, 245, 245))
-                            : new SolidColorBrush(Color.FromRgb(40, 40, 40));
-                        run.Foreground = _isLightMode
-                            ? new SolidColorBrush(Color.FromRgb(51, 51, 51))
-                            : new SolidColorBrush(Color.FromRgb(220, 220, 220));
+                        run.Background = new SolidColorBrush(Color.FromRgb(245, 245, 245));
+                        run.Foreground = new SolidColorBrush(Color.FromRgb(51, 51, 51));
                         break;
                     case "text_link":
                     case "link":
@@ -1405,9 +1383,7 @@ namespace TelegramChatViewer
                         run.Cursor = Cursors.Hand;
                         break;
                     case "spoiler":
-                        run.Background = _isLightMode
-                            ? new SolidColorBrush(Color.FromRgb(128, 128, 128))
-                            : new SolidColorBrush(Color.FromRgb(100, 100, 100));
+                        run.Background = new SolidColorBrush(Color.FromRgb(128, 128, 128));
                         run.Foreground = run.Background; // Hide text initially
                         run.ToolTip = "Spoiler: " + part.Text;
                         run.Cursor = Cursors.Hand;
@@ -1426,37 +1402,7 @@ namespace TelegramChatViewer
             return richTextBox;
         }
 
-        private void SwitchTheme(bool isLightMode)
-        {
-            _isLightMode = isLightMode;
-            ClearResourceCache();
-            
-            var resources = this.Resources;
-            
-            if (isLightMode)
-            {
-                resources["PrimaryBackground"] = _lightBackground;
-                resources["SecondaryBackground"] = _lightSecondaryBackground;
-                resources["AccentColor"] = _lightAccent;
-                resources["PrimaryText"] = _lightText;
-                resources["SecondaryText"] = _lightSecondaryText;
-            }
-            else
-            {
-                // Basic dark theme
-                resources["PrimaryBackground"] = new SolidColorBrush(Color.FromRgb(32, 32, 32));
-                resources["SecondaryBackground"] = new SolidColorBrush(Color.FromRgb(43, 43, 43));
-                resources["AccentColor"] = _lightAccent;
-                resources["PrimaryText"] = new SolidColorBrush(Color.FromRgb(255, 255, 255));
-                resources["SecondaryText"] = new SolidColorBrush(Color.FromRgb(176, 176, 176));
-            }
-            
-            _memberColors.Clear();
-            this.InvalidateVisual();
-            this.UpdateLayout();
-            
-            _logger.Info($"Theme switched to {(isLightMode ? "light" : "dark")} mode");
-        }
+
 
         private Brush GetMemberColor(string memberName)
         {

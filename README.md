@@ -19,7 +19,7 @@ A high-performance WPF application for viewing and analyzing exported Telegram c
 - **JSON Import**: Load exported Telegram chat files (JSON format)
 - **Rich Message Display**: Support for text, media, replies, forwards, and service messages  
 - **User-based Alternating Layout**: Messages alternate sides only when users change
-- **Theme Support**: Light and dark mode with automatic resource management
+- **Theme Support**: Clean light theme with automatic resource management
 - **Member Color Coding**: Unique colors for each chat participant
 - **Enhanced Quote System**: Color-coded reply backgrounds matching original sender colors
 

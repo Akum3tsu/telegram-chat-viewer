@@ -5,6 +5,34 @@ All notable changes to the Telegram Chat Viewer project will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2025-01-28
+
+### 🎉 First Official Release
+- **Stable Release** - First production-ready version of Telegram Chat Viewer
+- **Feature Complete** - All core functionality tested and optimized for daily use
+
+### 🎨 Visual Improvements
+- **Simplified Theme System** - Removed dark theme complexity, kept clean light theme
+  - Removed theme toggle from View menu for simplified user experience
+  - Optimized light theme colors for better readability
+  - Consistent theming across all dialogs and windows
+  - Improved resource management and performance
+
+### 🛠️ Code Quality Improvements
+- **Removed Theme Complexity** - Eliminated dark theme code paths
+  - Simplified color palette management
+  - Removed conditional theme switching logic
+  - Cleaner, more maintainable codebase
+  - Better performance due to reduced branching
+
+### 📦 Release Notes
+- **Self-Contained Executable** - No external dependencies required
+- **Windows x64 Optimized** - Built specifically for Windows 10/11 x64
+- **Production Ready** - Thoroughly tested for stability and performance
+- **File Size**: ~164MB (all dependencies included)
+
+---
+
 ## [0.4.2] - 2025-01-06
 
 ### 🐛 Bug Fixes
@@ -146,7 +174,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Message display with formatting support
 - Media file handling
 - Search functionality
-- Theme support (light/dark)
+- Theme support (light)
 - Performance optimizations for large files
 
 ---

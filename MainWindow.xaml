@@ -21,16 +21,7 @@
         <SolidColorBrush x:Key="BorderBrush" Color="#E0E0E0"/>
         <SolidColorBrush x:Key="HoverBrush" Color="#F0F0F0"/>
 
-        <!-- Dark Theme (Telegram Dark) -->
-        <SolidColorBrush x:Key="DarkBackgroundBrush" Color="#202020"/>
-        <SolidColorBrush x:Key="DarkSecondaryBackgroundBrush" Color="#2B2B2B"/>
-        <SolidColorBrush x:Key="DarkAccentBrush" Color="#2AABEE"/>
-        <SolidColorBrush x:Key="DarkTextBrush" Color="#FFFFFF"/>
-        <SolidColorBrush x:Key="DarkSecondaryTextBrush" Color="#B0B0B0"/>
-        <SolidColorBrush x:Key="DarkMessageIncomingBrush" Color="#3B3B3B"/>
-        <SolidColorBrush x:Key="DarkMessageOutgoingBrush" Color="#005C98"/>
-        <SolidColorBrush x:Key="DarkBorderBrush" Color="#404040"/>
-        <SolidColorBrush x:Key="DarkHoverBrush" Color="#353535"/>
+
 
         <!-- Light theme colors (default) - Exact Telegram Light Theme -->
         <SolidColorBrush x:Key="PrimaryBackground" Color="#DFEFD7"/>
@@ -47,20 +38,7 @@
         <SolidColorBrush x:Key="MessageAltBackground1" Color="#E9F5E3"/>
         <SolidColorBrush x:Key="MessageAltBackground2" Color="#D6E8CE"/>
 
-        <!-- Dark theme colors - Exact Telegram Dark Theme -->
-        <SolidColorBrush x:Key="DarkPrimaryBackground" Color="#0E1621"/>
-        <SolidColorBrush x:Key="DarkSecondaryBackground" Color="#17212B"/>
-        <SolidColorBrush x:Key="DarkMessageInBackground" Color="#1F2937"/>
-        <SolidColorBrush x:Key="DarkMessageOutBackground" Color="#2AABEE"/>
-        <SolidColorBrush x:Key="DarkServiceBackground" Color="#151E27"/>
-        <SolidColorBrush x:Key="DarkReplyBackground" Color="#1A252F"/>
-        <SolidColorBrush x:Key="DarkPrimaryText" Color="#FFFFFF"/>
-        <SolidColorBrush x:Key="DarkWelcomeText" Color="#FFFFFF"/>
-        <SolidColorBrush x:Key="DarkWelcomeSecondary" Color="#8696A0"/>
 
-        <!-- Dark alternating message backgrounds -->
-        <SolidColorBrush x:Key="DarkMessageAltBackground1" Color="#1A252F"/>
-        <SolidColorBrush x:Key="DarkMessageAltBackground2" Color="#243240"/>
 
         <!-- Light theme button and menu colors -->
         <SolidColorBrush x:Key="LightButtonBackground" Color="#2AABEE"/>
@@ -69,12 +47,7 @@
         <SolidColorBrush x:Key="LightMenuBackground" Color="#DFEFD7"/>
         <SolidColorBrush x:Key="LightMenuHover" Color="#D6E8CE"/>
 
-        <!-- Dark theme button and menu colors -->
-        <SolidColorBrush x:Key="DarkButtonBackground" Color="#2AABEE"/>
-        <SolidColorBrush x:Key="DarkButtonHover" Color="#1E96D9"/>
-        <SolidColorBrush x:Key="DarkButtonPressed" Color="#1882C4"/>
-        <SolidColorBrush x:Key="DarkMenuBackground" Color="#0E1621"/>
-        <SolidColorBrush x:Key="DarkMenuHover" Color="#17212B"/>
+
 
         <!-- Shadow Effect for loading dialog -->
         <DropShadowEffect x:Key="ShadowEffect" 
@@ -349,13 +322,6 @@
                           IsCheckable="True"
                           IsChecked="True"
                           Click="AlternatingLayoutMenuItem_Click"/>
-                <Separator/>
-                <MenuItem x:Name="LightModeMenuItem"
-                          Header="Light _Mode"
-                          IsCheckable="True"
-                          IsChecked="True"
-                          Click="LightModeMenuItem_Click"/>
-
             </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem x:Name="OpenLogMenuItem"

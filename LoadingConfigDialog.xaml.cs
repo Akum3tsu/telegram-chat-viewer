@@ -15,13 +15,12 @@ namespace TelegramChatViewer
         private readonly double _fileSizeMB;
         private readonly int _messageCount;
         private readonly string _fileName;
-        private readonly bool _isLightMode;
+
 
         public LoadingConfigDialog(string filePath, double fileSizeMB, int messageCount, bool isLightMode = true)
         {
             try
             {
-                _isLightMode = isLightMode;
                 InitializeComponent();
                 
                 _fileSizeMB = fileSizeMB;
@@ -86,30 +85,15 @@ namespace TelegramChatViewer
         {
             var resources = this.Resources;
             
-            if (_isLightMode)
-            {
-                // Apply light theme
-                this.Background = resources["BackgroundBrush"] as Brush;
-                resources["CurrentBackground"] = resources["BackgroundBrush"];
-                resources["CurrentSecondaryBackground"] = resources["SecondaryBackgroundBrush"];
-                resources["CurrentAccent"] = resources["AccentBrush"];
-                resources["CurrentText"] = resources["TextBrush"];
-                resources["CurrentSecondaryText"] = resources["SecondaryTextBrush"];
-                resources["CurrentBorder"] = resources["BorderBrush"];
-                resources["CurrentHover"] = resources["HoverBrush"];
-            }
-            else
-            {
-                // Apply dark theme
-                this.Background = resources["DarkBackgroundBrush"] as Brush;
-                resources["CurrentBackground"] = resources["DarkBackgroundBrush"];
-                resources["CurrentSecondaryBackground"] = resources["DarkSecondaryBackgroundBrush"];
-                resources["CurrentAccent"] = resources["DarkAccentBrush"];
-                resources["CurrentText"] = resources["DarkTextBrush"];
-                resources["CurrentSecondaryText"] = resources["DarkSecondaryTextBrush"];
-                resources["CurrentBorder"] = resources["DarkBorderBrush"];
-                resources["CurrentHover"] = resources["DarkHoverBrush"];
-            }
+            // Apply light theme
+            this.Background = resources["BackgroundBrush"] as Brush;
+            resources["CurrentBackground"] = resources["BackgroundBrush"];
+            resources["CurrentSecondaryBackground"] = resources["SecondaryBackgroundBrush"];
+            resources["CurrentAccent"] = resources["AccentBrush"];
+            resources["CurrentText"] = resources["TextBrush"];
+            resources["CurrentSecondaryText"] = resources["SecondaryTextBrush"];
+            resources["CurrentBorder"] = resources["BorderBrush"];
+            resources["CurrentHover"] = resources["HoverBrush"];
         }
 
         private void InitializeDialog()

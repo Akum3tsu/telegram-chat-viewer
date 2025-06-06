@@ -9,7 +9,7 @@
         Icon="Resources/telegram_chat_viewer.ico">
     
     <Window.Resources>
-        <!-- Dark theme colors (matching main window) -->
+
         <SolidColorBrush x:Key="PrimaryBackground" Color="#17212B"/>
         <SolidColorBrush x:Key="SecondaryBackground" Color="#242F3D"/>
         <SolidColorBrush x:Key="AccentColor" Color="#5288C1"/>

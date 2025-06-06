@@ -28,14 +28,7 @@
         <SolidColorBrush x:Key="BorderBrush" Color="#E0E0E0"/>
         <SolidColorBrush x:Key="HoverBrush" Color="#F0F0F0"/>
         
-        <!-- Official Telegram Dark Theme -->
-        <SolidColorBrush x:Key="DarkBackgroundBrush" Color="#202020"/>
-        <SolidColorBrush x:Key="DarkSecondaryBackgroundBrush" Color="#2B2B2B"/>
-        <SolidColorBrush x:Key="DarkAccentBrush" Color="#2AABEE"/>
-        <SolidColorBrush x:Key="DarkTextBrush" Color="#FFFFFF"/>
-        <SolidColorBrush x:Key="DarkSecondaryTextBrush" Color="#B0B0B0"/>
-        <SolidColorBrush x:Key="DarkBorderBrush" Color="#404040"/>
-        <SolidColorBrush x:Key="DarkHoverBrush" Color="#353535"/>
+
 
         <!-- Modern button style -->
         <Style x:Key="ModernButtonStyle" TargetType="Button">
