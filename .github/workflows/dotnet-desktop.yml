@@ -102,16 +102,7 @@ jobs:
           --no-restore
       working-directory: ${{ env.Project_Directory }}
 
-    # Create portable version (framework-dependent)
-    - name: Publish Portable Version
-      run: |
-        dotnet publish $env:Solution_Name `
-          --configuration ${{ matrix.configuration }} `
-          --runtime win-x64 `
-          --self-contained false `
-          --output ./publish/portable `
-          --no-restore
-      working-directory: ${{ env.Project_Directory }}
+
 
     # Run tests if they exist
     - name: Run tests
@@ -164,50 +155,27 @@ jobs:
         # Create release directory
         New-Item -ItemType Directory -Force -Path "./release"
         
+        # Create a temp directory for the zip contents
+        $tempDir = "TelegramChatViewer-Package"
+        New-Item -ItemType Directory -Force -Path $tempDir
+        
         # Copy single-file executable
         if (Test-Path "./publish/win-x64/TelegramChatViewer.exe") {
-          Copy-Item "./publish/win-x64/TelegramChatViewer.exe" "./release/TelegramChatViewer-v${{ steps.version.outputs.VERSION }}-win-x64.exe"
-        }
-        
-        # Create portable zip
-        if (Test-Path "./publish/portable") {
-          Compress-Archive -Path "./publish/portable/*" -DestinationPath "./release/TelegramChatViewer-v${{ steps.version.outputs.VERSION }}-portable.zip"
-        }
-        
-        # Copy example files
-        if (Test-Path "./examples") {
-          Copy-Item "./examples" "./release/examples" -Recurse
+          Copy-Item "./publish/win-x64/TelegramChatViewer.exe" "./$tempDir/"
         }
         
         # Copy documentation
         if (Test-Path "README.md") {
-          Copy-Item "README.md" "./release/"
+          Copy-Item "README.md" "./$tempDir/"
         }
         if (Test-Path "FEATURES.md") {
-          Copy-Item "FEATURES.md" "./release/"
+          Copy-Item "FEATURES.md" "./$tempDir/"
         }
         
-        # Create source archive
-        $sourceFiles = @(
-          "*.cs", "*.xaml", "*.csproj", "*.sln", "*.json", "*.md", "*.txt", "*.bat", "*.ps1", "*.ico", "*.manifest",
-          "Services/*", "Models/*", "Properties/*", ".github/*"
-        )
+        # Create the release zip
+        Compress-Archive -Path "./$tempDir/*" -DestinationPath "./release/TelegramChatViewer-v${{ steps.version.outputs.VERSION }}.zip"
         
-        $tempDir = "TelegramChatViewer-Source"
-        New-Item -ItemType Directory -Force -Path $tempDir
-        
-        foreach ($pattern in $sourceFiles) {
-          $files = Get-ChildItem -Path $pattern -Recurse -File -ErrorAction SilentlyContinue
-          foreach ($file in $files) {
-            $relativePath = $file.FullName.Substring((Get-Location).Path.Length + 1)
-            $destPath = Join-Path $tempDir $relativePath
-            $destDir = Split-Path $destPath -Parent
-            New-Item -ItemType Directory -Force -Path $destDir -ErrorAction SilentlyContinue
-            Copy-Item $file.FullName $destPath
-          }
-        }
-        
-        Compress-Archive -Path "./$tempDir/*" -DestinationPath "./release/TelegramChatViewer-v${{ steps.version.outputs.VERSION }}-source.zip"
+        # Clean up temp directory
         Remove-Item $tempDir -Recurse -Force
 
     # Upload build artifacts
@@ -215,12 +183,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: TelegramChatViewer-v${{ steps.version.outputs.VERSION }}
-        path: |
-          ./release/TelegramChatViewer-v${{ steps.version.outputs.VERSION }}-win-x64.exe
-          ./release/TelegramChatViewer-v${{ steps.version.outputs.VERSION }}-portable.zip
-          ./release/TelegramChatViewer-v${{ steps.version.outputs.VERSION }}-source.zip
-          ./release/README.md
-          ./release/FEATURES.md
+        path: ./release/TelegramChatViewer-v${{ steps.version.outputs.VERSION }}.zip
         retention-days: 90
 
     # Create GitHub Release on tag push or when new tag was created
@@ -241,14 +204,9 @@ jobs:
           - Real-time search with keyboard navigation
           - Light/dark theme support
           
-          ## 📦 Downloads
+          ## 📦 Download
           
-          ### Recommended
-          - **TelegramChatViewer-v${{ steps.version.outputs.VERSION }}-win-x64.exe** - Single-file executable (no installation required)
-          
-          ### Alternative
-          - **TelegramChatViewer-v${{ steps.version.outputs.VERSION }}-portable.zip** - Requires .NET 8.0 Runtime
-          - **TelegramChatViewer-v${{ steps.version.outputs.VERSION }}-source.zip** - Source code
+          - **TelegramChatViewer-v${{ steps.version.outputs.VERSION }}.zip** - Complete package with executable and documentation
           
           ## 🛠️ System Requirements
           - Windows 10/11 (x64)
@@ -262,18 +220,13 @@ jobs:
           - **Themes**: Light and dark mode support
           
           ## 🔧 Usage
-          1. Download the `.exe` file
-          2. Run directly (no installation needed)
+          1. Download and extract the zip file
+          2. Run `TelegramChatViewer.exe` directly (no installation needed)
           3. Click "Load Chat" and select your Telegram JSON export
           4. Use `Ctrl+Shift+A` for multi-message selection
           
           Full documentation available in the repository.
-        files: |
-          ./release/TelegramChatViewer-v${{ steps.version.outputs.VERSION }}-win-x64.exe
-          ./release/TelegramChatViewer-v${{ steps.version.outputs.VERSION }}-portable.zip
-          ./release/TelegramChatViewer-v${{ steps.version.outputs.VERSION }}-source.zip
-          ./release/README.md
-          ./release/FEATURES.md
+        files: ./release/TelegramChatViewer-v${{ steps.version.outputs.VERSION }}.zip
         draft: false
         prerelease: false
       env:
