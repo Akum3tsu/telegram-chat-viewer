@@ -13,7 +13,7 @@
           "type": "mention",
           "text": "@Bob"
         },
-        " Hey there! How are you doing?"
+        " Hey there! How are you doing? Really long message etc etc etcasda dash kjashd akjsdh akjsd hsah dkjahs dkash dkas djkash jkdha skjdhakj dhaskj hakj dhakjsd hakjshd kajsh dkjahsd kjahsd kj"
       ],
       "text_entities": [
         {
@@ -22,7 +22,7 @@
         },
         {
           "type": "plain",
-          "text": " Hey there! How are you doing?"
+          "text": "Hey there! How are you doing? Really long message etc etc etcasda dash kjashd akjsdh akjsd hsah dkjahs dkash dkas djkash jkdha skjdhakj dhaskj hakj dhakjsd hakjshd kajsh dkjahsd kjahsd kj"
         }
       ]
     },

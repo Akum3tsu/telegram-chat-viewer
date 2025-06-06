@@ -1225,7 +1225,7 @@ namespace TelegramChatViewer
                     FontStyle = FontStyles.Italic,
                     Foreground = _lightAccent,
                     TextWrapping = TextWrapping.Wrap,
-                    MaxHeight = 40, // Limit height for long messages
+                    MaxHeight = 120, // Increased height for better readability of quoted messages
                     IsReadOnly = true,
                     Background = Brushes.Transparent,
                     BorderThickness = new Thickness(0),
@@ -1508,7 +1508,16 @@ namespace TelegramChatViewer
             // Create detailed preview text based on message content
             string preview = "";
             
-            if (!string.IsNullOrEmpty(originalMessage.PlainText))
+            // Handle service messages (actions like joining, leaving, etc.)
+            if (originalMessage.IsServiceMessage)
+            {
+                preview = MessageParser.FormatServiceMessage(
+                    originalMessage.Actor, 
+                    originalMessage.Action, 
+                    originalMessage.Title, 
+                    originalMessage.Members);
+            }
+            else if (!string.IsNullOrEmpty(originalMessage.PlainText))
             {
                 preview = originalMessage.PlainText;
             }
@@ -1550,12 +1559,9 @@ namespace TelegramChatViewer
                 preview = "Message";
             }
 
-            // Limit preview length
-            if (preview.Length > 50)
-            {
-                preview = preview.Substring(0, 47) + "...";
-            }
-
+            // Remove the length limitation for better readability - let text wrapping handle it
+            // This allows users to see the full context of what they're replying to
+            
             return $"↩️ {originalMessage.DisplaySender}: {preview}";
         }
 

@@ -26,11 +26,15 @@
             
             <!-- App Icon and Title -->
             <StackPanel Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center">
-                <TextBlock Text="💬" FontSize="72" HorizontalAlignment="Center" Margin="0,0,0,20">
-                    <TextBlock.Effect>
-                        <DropShadowEffect Color="#FF42ABEE" BlurRadius="10" ShadowDepth="0" Opacity="0.6"/>
-                    </TextBlock.Effect>
-                </TextBlock>
+                <Image Source="/Resources/splash_icon.png" 
+                       Width="128" 
+                       Height="128"
+                       HorizontalAlignment="Center" 
+                       Margin="0,0,0,20">
+                    <Image.Effect>
+                        <DropShadowEffect Color="#FF42ABEE" BlurRadius="15" ShadowDepth="0" Opacity="0.7"/>
+                    </Image.Effect>
+                </Image>
                 
                 <TextBlock Text="Telegram Chat Viewer" 
                           FontSize="28" 
@@ -78,7 +82,7 @@
             <!-- Version Info -->
             <TextBlock x:Name="VersionText"
                       Grid.Row="3"
-                      Text="v0.2.0"
+                      Text="v0.3.0"
                       FontSize="10"
                       Foreground="#FF666666"
                       HorizontalAlignment="Center"
