@@ -146,11 +146,8 @@ namespace TelegramChatViewer
                 ChunkSizeComboBox.SelectedIndex = 0; // 500
             }
 
-            // Auto-enable UI enhancements for large chats
-            if (_messageCount > 50000)
-            {
-                AlternatingLayoutCheckBox.IsChecked = true;
-            }
+            // Enable alternating layout by default for better readability
+            AlternatingLayoutCheckBox.IsChecked = true;
         }
 
         private void ApplySmartDefaults()
@@ -382,23 +379,25 @@ namespace TelegramChatViewer
                 ProgressiveRadio.IsChecked = true;
                 MassiveLoadCheckBox.IsChecked = true;
                 ChunkSizeComboBox.SelectedIndex = 3; // 5000 (Massive)
-                if (_messageCount > 20000)
-                    AlternatingLayoutCheckBox.IsChecked = true;
+                AlternatingLayoutCheckBox.IsChecked = true;
             }
             else if (_messageCount > 5000)
             {
                 ProgressiveRadio.IsChecked = true;
                 ChunkSizeComboBox.SelectedIndex = 2; // 2000 (Aggressive)
+                AlternatingLayoutCheckBox.IsChecked = true;
             }
             else if (_messageCount > 2000)
             {
                 ProgressiveRadio.IsChecked = true;
                 ChunkSizeComboBox.SelectedIndex = 1; // 1000 (Balanced)
+                AlternatingLayoutCheckBox.IsChecked = true;
             }
             else
             {
                 LoadAllRadio.IsChecked = true;
                 ChunkSizeComboBox.SelectedIndex = 0; // 500 (Conservative)
+                AlternatingLayoutCheckBox.IsChecked = true;
             }
 
             UpdateEstimates();
@@ -427,7 +426,7 @@ namespace TelegramChatViewer
         public bool UseMassiveLoad { get; set; } = false;
         public bool UseVirtualScrolling { get; set; } = false;
         public int ChunkSize { get; set; } = 1000;
-        public bool UseAlternatingLayout { get; set; } = false;
+        public bool UseAlternatingLayout { get; set; } = true;
 
     }
 
