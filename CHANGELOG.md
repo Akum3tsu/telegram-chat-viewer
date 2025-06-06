@@ -5,6 +5,40 @@ All notable changes to the Telegram Chat Viewer project will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.2] - 2025-01-06
+
+### 🐛 Bug Fixes
+- **Search TextBox Text Cropping** - Fixed search input text being cropped and unreadable
+  - Created specialized `SearchTextBoxStyle` with optimized padding (8,3 instead of 8,6)
+  - Added proper vertical content alignment and centering
+  - Improved text visibility within 30px height constraint
+  - Enhanced template with better ScrollViewer positioning
+
+- **OGG Audio Playback Issues** - Completely resolved "Could not initialize container!" errors
+  - Implemented robust multi-tier fallback system for OGG voice messages
+  - **Tier 1**: NAudio.Vorbis for inline playback (when possible)
+  - **Tier 2**: Automatic external player fallback for problematic OGG files
+  - **Tier 3**: MediaElement and system player fallbacks for other formats
+  - Added smart UI feedback with temporary play state for external players
+  - Enhanced error handling with graceful fallbacks instead of blocking dialogs
+  - Added FFMpegCore dependency for future audio enhancement capabilities
+
+- **Consecutive Message Grouping** - Fixed messages from same user showing duplicate headers
+  - Corrected `ShouldShowSenderHeader` logic to use proper message indices
+  - Fixed both optimized batch rendering and standard rendering paths
+  - Updated `AddBasicMessage` to support consecutive message detection
+  - Enhanced `messageIndex` calculation during batch processing
+
+### 🔧 Technical Improvements
+- **Enhanced Audio Error Handling** - Comprehensive logging and debugging for audio issues
+- **Improved Resource Management** - Better cleanup and disposal of audio resources
+- **UI Responsiveness** - Optimized search interface styling and layout
+- **Code Quality** - Removed duplicate using directives and cleaned up syntax
+
+### 📝 Documentation
+- Updated README.md with current build instructions and feature list
+- Enhanced error messages with specific guidance for different failure scenarios
+
 ## [0.4.1] - 2025-01-06
 
 ### 🐛 Bug Fixes
