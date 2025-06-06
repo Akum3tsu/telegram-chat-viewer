@@ -74,8 +74,7 @@ namespace TelegramChatViewer
                 ChunkSizeComboBox.SelectedIndex = closestIndex;
             }
 
-            // Set performance options
-            if (MassiveLoadCheckBox != null) MassiveLoadCheckBox.IsChecked = suggestedConfig.UseMassiveLoad;
+            // Set performance options (massive load is now determined by chunk size >= 5000)
             if (VirtualScrollingCheckBox != null) VirtualScrollingCheckBox.IsChecked = suggestedConfig.UseVirtualScrolling;
             if (AlternatingLayoutCheckBox != null) AlternatingLayoutCheckBox.IsChecked = suggestedConfig.UseAlternatingLayout;
 
@@ -126,24 +125,22 @@ namespace TelegramChatViewer
             {
                 StreamingRadio.IsChecked = true;
                 VirtualScrollingCheckBox.IsChecked = true;
-                MassiveLoadCheckBox.IsChecked = true;
-                ChunkSizeComboBox.SelectedIndex = 3; // 5000
+                ChunkSizeComboBox.SelectedIndex = 3; // 5000 (automatically enables massive load)
             }
             else if (_fileSizeMB > 50 || _messageCount > 10000)
             {
                 ProgressiveRadio.IsChecked = true;
-                MassiveLoadCheckBox.IsChecked = true;
-                ChunkSizeComboBox.SelectedIndex = 2; // 2000
+                ChunkSizeComboBox.SelectedIndex = 3; // 5000 (default with massive load)
             }
             else if (_messageCount > 2000)
             {
                 ProgressiveRadio.IsChecked = true;
-                ChunkSizeComboBox.SelectedIndex = 1; // 1000
+                ChunkSizeComboBox.SelectedIndex = 3; // 5000 (default)
             }
             else
             {
                 LoadAllRadio.IsChecked = true;
-                ChunkSizeComboBox.SelectedIndex = 0; // 500
+                ChunkSizeComboBox.SelectedIndex = 0; // 500 for small chats
             }
 
             // Enable alternating layout by default for better readability
@@ -156,12 +153,6 @@ namespace TelegramChatViewer
             if (_fileSizeMB > 100 || _messageCount > 50000)
             {
                 VirtualScrollingCheckBox.IsChecked = true;
-            }
-
-            // Enable massive load for large chats
-            if (_messageCount > 10000)
-            {
-                MassiveLoadCheckBox.IsChecked = true;
             }
         }
 
@@ -275,10 +266,6 @@ namespace TelegramChatViewer
             else
                 config.LoadingStrategy = LoadingStrategy.Progressive;
 
-            // Performance options - with null checks
-            config.UseMassiveLoad = MassiveLoadCheckBox?.IsChecked == true;
-            config.UseVirtualScrolling = VirtualScrollingCheckBox?.IsChecked == true;
-            
             // Chunk size
             var selectedItem = ChunkSizeComboBox.SelectedItem as ComboBoxItem;
             if (selectedItem?.Tag != null)
@@ -287,9 +274,13 @@ namespace TelegramChatViewer
             }
             else
             {
-                // Fallback to default chunk size if no item is selected
-                config.ChunkSize = 1000;
+                // Fallback to new default chunk size if no item is selected
+                config.ChunkSize = 5000;
             }
+
+            // Performance options - massive load determined by chunk size
+            config.UseMassiveLoad = config.ChunkSize >= 5000;
+            config.UseVirtualScrolling = VirtualScrollingCheckBox?.IsChecked == true;
 
             // UI options - with null checks
             config.UseAlternatingLayout = AlternatingLayoutCheckBox?.IsChecked == true;
@@ -317,16 +308,10 @@ namespace TelegramChatViewer
         private void PerformanceOption_Changed(object sender, RoutedEventArgs e)
         {
             // Guard clause: prevent execution before UI elements are initialized
-            if (MassiveLoadCheckBox == null || ChunkSizeComboBox == null)
+            if (ChunkSizeComboBox == null)
                 return;
 
             UpdateEstimates();
-            
-            // Auto-adjust chunk size if massive load is enabled
-            if (MassiveLoadCheckBox.IsChecked == true && ChunkSizeComboBox.SelectedIndex < 3)
-            {
-                ChunkSizeComboBox.SelectedIndex = 3; // 5000
-            }
         }
 
         private void UIOption_Changed(object sender, RoutedEventArgs e)
@@ -337,24 +322,20 @@ namespace TelegramChatViewer
         private void ChunkSize_Changed(object sender, SelectionChangedEventArgs e)
         {
             // Guard clause: prevent execution before UI elements are initialized
-            if (ChunkSizeComboBox == null || MassiveLoadCheckBox == null)
+            if (ChunkSizeComboBox == null)
                 return;
 
             UpdateEstimates();
             
-            // Auto-enable massive load for large chunk sizes
-            if (ChunkSizeComboBox.SelectedIndex >= 3) // 5000 or higher
-            {
-                MassiveLoadCheckBox.IsChecked = true;
-            }
+            // Massive load is now automatically determined by chunk size >= 5000
+            // No manual checkbox needed
         }
 
         private void ApplyRecommendations_Click(object sender, RoutedEventArgs e)
         {
             // Guard clause: prevent execution before UI elements are initialized
             if (StreamingRadio == null || ProgressiveRadio == null || LoadAllRadio == null || 
-                VirtualScrollingCheckBox == null || MassiveLoadCheckBox == null || 
-                ChunkSizeComboBox == null || AlternatingLayoutCheckBox == null)
+                VirtualScrollingCheckBox == null || ChunkSizeComboBox == null || AlternatingLayoutCheckBox == null)
                 return;
 
             // Apply recommended settings based on file characteristics
@@ -362,23 +343,20 @@ namespace TelegramChatViewer
             {
                 StreamingRadio.IsChecked = true;
                 VirtualScrollingCheckBox.IsChecked = true;
-                MassiveLoadCheckBox.IsChecked = true;
-                ChunkSizeComboBox.SelectedIndex = 5; // 50000 (Ultra Fast)
+                ChunkSizeComboBox.SelectedIndex = 5; // 50000 (Ultra Fast, automatically massive)
                 AlternatingLayoutCheckBox.IsChecked = true;
             }
             else if (_fileSizeMB > 100 || _messageCount > 50000)
             {
                 StreamingRadio.IsChecked = true;
                 VirtualScrollingCheckBox.IsChecked = true;
-                MassiveLoadCheckBox.IsChecked = true;
-                ChunkSizeComboBox.SelectedIndex = 4; // 10000 (Fast)
+                ChunkSizeComboBox.SelectedIndex = 4; // 10000 (Fast, automatically massive)
                 AlternatingLayoutCheckBox.IsChecked = true;
             }
             else if (_fileSizeMB > 50 || _messageCount > 10000)
             {
                 ProgressiveRadio.IsChecked = true;
-                MassiveLoadCheckBox.IsChecked = true;
-                ChunkSizeComboBox.SelectedIndex = 3; // 5000 (Massive)
+                ChunkSizeComboBox.SelectedIndex = 3; // 5000 (Massive, automatically massive)
                 AlternatingLayoutCheckBox.IsChecked = true;
             }
             else if (_messageCount > 5000)
@@ -423,9 +401,9 @@ namespace TelegramChatViewer
     public class LoadingConfig
     {
         public LoadingStrategy LoadingStrategy { get; set; } = LoadingStrategy.Progressive;
-        public bool UseMassiveLoad { get; set; } = false;
+        public bool UseMassiveLoad { get; set; } = true; // Default to true since default chunk size is now 5000
         public bool UseVirtualScrolling { get; set; } = false;
-        public int ChunkSize { get; set; } = 1000;
+        public int ChunkSize { get; set; } = 5000; // Changed from 1000 to 5000
         public bool UseAlternatingLayout { get; set; } = true;
 
     }
