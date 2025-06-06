@@ -6,7 +6,7 @@
         Width="500"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner"
-        Icon="telegram_chat_viewer.ico">
+        Icon="../Resources/telegram_chat_viewer.ico">
     
     <Window.Resources>
         <!-- Dark theme colors (matching main window) -->
@@ -63,7 +63,7 @@
                    Margin="40">
             
             <!-- App icon and title -->
-            <Image Source="telegram_chat_viewer.ico" 
+            <Image Source="../Resources/telegram_chat_viewer.ico" 
                    Width="64" 
                    Height="64" 
                    Margin="0,0,0,20"/>
