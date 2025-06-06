@@ -77,12 +77,12 @@
                        Margin="0,0,0,10"/>
             
             <TextBlock x:Name="VersionLabel"
-                       Text="Version 0.3.0"
+                       Text="Version 0.4.0"
                        FontFamily="Segoe UI"
                        FontSize="14"
-                       Foreground="{StaticResource SecondaryText}"
+                       Foreground="{DynamicResource SecondaryText}"
                        HorizontalAlignment="Center"
-                       Margin="0,0,0,20"/>
+                       Margin="0,8,0,12"/>
             
             <!-- Description -->
             <TextBlock Text="A high-performance desktop application for viewing Telegram chat exports"
