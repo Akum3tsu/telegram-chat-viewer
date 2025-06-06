@@ -1,3 +1,14 @@
+--------------------------------------------
+
+# DISCLAIMER
+
+The entire project, code ,examples , even this readme are the result of on-going vibe coding with less as possible refinement by a person.
+
+Goal of this approach is to explore and understand how much an AI today can do even with little to nothing help from an experienced (and even a beginner) programmer.
+
+Feel free to fork this project to your liking, hoping that it will be helpful to somebody else project as well :)  
+
+---------------------------------------------
 # Telegram Chat Viewer
 
 A high-performance WPF application for viewing and analyzing exported Telegram chat files with advanced text selection, multi-message copying, and optimized rendering for massive datasets.
