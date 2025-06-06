@@ -6,7 +6,7 @@
         Width="500"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner"
->
+        Icon="Resources/telegram_chat_viewer.ico">
     
     <Window.Resources>
         <!-- Dark theme colors (matching main window) -->
@@ -63,7 +63,10 @@
                    Margin="40">
             
             <!-- App icon and title -->
-            <!-- Icon removed -->
+            <Image Source="Resources/telegram_chat_viewer.ico" 
+                   Width="64" 
+                   Height="64" 
+                   Margin="0,0,0,20"/>
             
             <TextBlock Text="Telegram Chat Viewer"
                        FontFamily="Segoe UI"
