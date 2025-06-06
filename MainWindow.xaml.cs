@@ -2804,11 +2804,18 @@ namespace TelegramChatViewer
         private bool ShouldShowSenderHeader(TelegramMessage message, int messageIndex)
         {
             // Always show header for the first message
-            if (messageIndex == 0 || _currentMessages.Count == 0)
+            if (messageIndex == 0)
                 return true;
                 
-            // Get the previous message
-            var previousMessage = messageIndex > 0 ? _currentMessages[messageIndex - 1] : null;
+            // Get the previous message from the appropriate list
+            // Use _allMessages if available, otherwise fall back to _currentMessages
+            var messageList = _allMessages.Count > 0 ? _allMessages : _currentMessages;
+            
+            // Ensure we have a valid previous message
+            if (messageIndex - 1 < 0 || messageIndex - 1 >= messageList.Count)
+                return true;
+                
+            var previousMessage = messageList[messageIndex - 1];
             if (previousMessage == null)
                 return true;
                 
