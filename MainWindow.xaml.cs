@@ -673,45 +673,51 @@ namespace TelegramChatViewer
 
             // Apply alternating layout if enabled
             bool alignRight = GetMessageAlignment(message, messageIndex);
+            
+            // Check if we should show the sender header (for message grouping)
+            bool showSenderHeader = ShouldShowSenderHeader(message, messageIndex);
 
-            // Member header
-            var headerPanel = new StackPanel
+            // Member header (only show if needed for grouping)
+            if (showSenderHeader)
             {
-                Orientation = Orientation.Horizontal,
-                Margin = new Thickness(10, 0, 0, 3)
-            };
+                var headerPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    Margin = new Thickness(10, 0, 0, 3)
+                };
 
-            // Align header based on message alignment
-            if (alignRight)
-            {
-                headerPanel.HorizontalAlignment = HorizontalAlignment.Right;
-                headerPanel.Margin = new Thickness(0, 0, 10, 3);
+                // Align header based on message alignment
+                if (alignRight)
+                {
+                    headerPanel.HorizontalAlignment = HorizontalAlignment.Right;
+                    headerPanel.Margin = new Thickness(0, 0, 10, 3);
+                }
+
+                var memberColor = GetMemberColor(message.DisplaySender);
+                var memberLabel = new TextBox
+                {
+                    Text = message.DisplaySender,
+                    FontFamily = new FontFamily("Segoe UI"),
+                    FontSize = 13,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = memberColor,
+                    IsReadOnly = true,
+                    Background = Brushes.Transparent,
+                    BorderThickness = new Thickness(0),
+                    IsTabStop = false,
+                    Cursor = Cursors.IBeam,
+                    FocusVisualStyle = null
+                };
+
+                headerPanel.Children.Add(memberLabel);
+                memberContainer.Children.Add(headerPanel);
             }
 
-            var memberColor = GetMemberColor(message.DisplaySender);
-            var memberLabel = new TextBox
-            {
-                Text = message.DisplaySender,
-                FontFamily = new FontFamily("Segoe UI"),
-                FontSize = 13,
-                FontWeight = FontWeights.Bold,
-                Foreground = memberColor,
-                IsReadOnly = true,
-                Background = Brushes.Transparent,
-                BorderThickness = new Thickness(0),
-                IsTabStop = false,
-                Cursor = Cursors.IBeam,
-                FocusVisualStyle = null
-            };
-
-            headerPanel.Children.Add(memberLabel);
-            memberContainer.Children.Add(headerPanel);
-
-            // Message bubble
+            // Message bubble - adjust margin based on whether header is shown
             var bubble = CreateBasicMessageBubble(message);
             var messageContainer = new Grid
             {
-                Margin = new Thickness(0, 1, 0, 1)
+                Margin = showSenderHeader ? new Thickness(0, 1, 0, 1) : new Thickness(0, 0, 0, 1)
             };
 
             if (alignRight)
@@ -1499,7 +1505,7 @@ namespace TelegramChatViewer
             if (originalMessage == null)
                 return $"Reply to message #{replyToMessageId}";
 
-            // Create preview text based on message content
+            // Create detailed preview text based on message content
             string preview = "";
             
             if (!string.IsNullOrEmpty(originalMessage.PlainText))
@@ -1513,18 +1519,26 @@ namespace TelegramChatViewer
                     case "voice_message":
                     case "voice_note":
                         preview = "🎵 Voice message";
+                        if (originalMessage.DurationSeconds.HasValue)
+                            preview += $" ({TimeSpan.FromSeconds(originalMessage.DurationSeconds.Value):mm\\:ss})";
                         break;
                     case "sticker":
                         preview = $"😀 Sticker {originalMessage.StickerEmoji}";
                         break;
                     case "animation":
                         preview = "🎞️ GIF";
+                        if (originalMessage.Width.HasValue && originalMessage.Height.HasValue)
+                            preview += $" ({originalMessage.Width}x{originalMessage.Height})";
                         break;
                     case "video":
                         preview = "📹 Video";
+                        if (originalMessage.DurationSeconds.HasValue)
+                            preview += $" ({TimeSpan.FromSeconds(originalMessage.DurationSeconds.Value):mm\\:ss})";
                         break;
                     case "photo":
                         preview = "📷 Photo";
+                        if (originalMessage.Width.HasValue && originalMessage.Height.HasValue)
+                            preview += $" ({originalMessage.Width}x{originalMessage.Height})";
                         break;
                     default:
                         preview = "📎 Media";
@@ -1558,35 +1572,43 @@ namespace TelegramChatViewer
 
             var mediaPanel = new StackPanel();
 
-            switch (message.MediaType?.ToLower())
+            // Check for photo first (even if MediaType is not set)
+            if (!string.IsNullOrEmpty(message.Photo))
             {
-                case "voice_message":
-                case "voice_note":
-                    mediaPanel.Children.Add(CreateVoiceMessageElement(message));
-                    break;
-                
-                case "sticker":
-                    mediaPanel.Children.Add(CreateStickerElement(message));
-                    break;
-                
-                case "animation":
-                    mediaPanel.Children.Add(CreateAnimationElement(message));
-                    break;
-                
-                case "video":
-                    mediaPanel.Children.Add(CreateVideoElement(message));
-                    break;
-                
-                case "photo":
-                    mediaPanel.Children.Add(CreatePhotoElement(message));
-                    break;
-                
-                default:
-                    if (!string.IsNullOrEmpty(message.File))
-                    {
-                        mediaPanel.Children.Add(CreateGenericFileElement(message));
-                    }
-                    break;
+                mediaPanel.Children.Add(CreatePhotoElement(message));
+            }
+            else
+            {
+                switch (message.MediaType?.ToLower())
+                {
+                    case "voice_message":
+                    case "voice_note":
+                        mediaPanel.Children.Add(CreateVoiceMessageElement(message));
+                        break;
+                    
+                    case "sticker":
+                        mediaPanel.Children.Add(CreateStickerElement(message));
+                        break;
+                    
+                    case "animation":
+                        mediaPanel.Children.Add(CreateAnimationElement(message));
+                        break;
+                    
+                    case "video":
+                        mediaPanel.Children.Add(CreateVideoElement(message));
+                        break;
+                    
+                    case "photo":
+                        mediaPanel.Children.Add(CreatePhotoElement(message));
+                        break;
+                    
+                    default:
+                        if (!string.IsNullOrEmpty(message.File))
+                        {
+                            mediaPanel.Children.Add(CreateGenericFileElement(message));
+                        }
+                        break;
+                }
             }
 
             if (mediaPanel.Children.Count > 0)
@@ -1600,26 +1622,44 @@ namespace TelegramChatViewer
 
         private UIElement CreateVoiceMessageElement(TelegramMessage message)
         {
+            var voiceContainer = new Border
+            {
+                Background = GetCachedResource("SecondaryBackground"),
+                CornerRadius = new CornerRadius(8),
+                Padding = new Thickness(12),
+                MaxWidth = 300,
+                Cursor = Cursors.Hand
+            };
+            
             var voicePanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal
             };
 
-            // Voice icon
-            var voiceIcon = new TextBlock
+            // Play button
+            var playButton = new Button
             {
-                Text = "🎵",
-                FontSize = 16,
+                Content = "▶️",
+                FontSize = 20,
+                Width = 40,
+                Height = 40,
+                Background = GetCachedResource("PrimaryBackground"),
+                BorderBrush = GetCachedResource("SecondaryText"),
+                BorderThickness = new Thickness(1),
                 VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(0, 0, 8, 0)
+                Margin = new Thickness(0, 0, 10, 0),
+                Style = null // Remove default button styling
             };
 
             // Voice info
-            var voiceInfo = new StackPanel();
+            var voiceInfo = new StackPanel
+            {
+                VerticalAlignment = VerticalAlignment.Center
+            };
             
             var titleText = new TextBlock
             {
-                Text = "Voice Message",
+                Text = "🎵 Voice Message",
                 FontWeight = FontWeights.SemiBold,
                 FontSize = 12,
                 Foreground = GetCachedResource("PrimaryText")
@@ -1636,7 +1676,7 @@ namespace TelegramChatViewer
 
             var fileNameText = new TextBlock
             {
-                Text = Path.GetFileName(message.File),
+                Text = !string.IsNullOrEmpty(message.File) ? Path.GetFileName(message.File) : "Voice file",
                 FontSize = 10,
                 Foreground = GetCachedResource("SecondaryText"),
                 FontStyle = FontStyles.Italic
@@ -1646,10 +1686,55 @@ namespace TelegramChatViewer
             voiceInfo.Children.Add(durationText);
             voiceInfo.Children.Add(fileNameText);
 
-            voicePanel.Children.Add(voiceIcon);
+            voicePanel.Children.Add(playButton);
             voicePanel.Children.Add(voiceInfo);
+            
+            voiceContainer.Child = voicePanel;
 
-            return voicePanel;
+            // Add click handlers to play the audio
+            Action<object, RoutedEventArgs> playAudio = (s, e) => 
+            {
+                if (!string.IsNullOrEmpty(message.File))
+                {
+                    string audioPath = Path.IsPathRooted(message.File) ? 
+                        message.File : 
+                        Path.Combine(_jsonFileDirectory, message.File);
+                        
+                    if (File.Exists(audioPath))
+                    {
+                        try
+                        {
+                            // Try to play with default audio player
+                            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(audioPath) { UseShellExecute = true });
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Error($"Failed to play audio: {ex.Message}");
+                            
+                            // Try alternative method using Windows Media Player
+                            try
+                            {
+                                System.Diagnostics.Process.Start("wmplayer.exe", $"\"{audioPath}\"");
+                            }
+                            catch (Exception ex2)
+                            {
+                                _logger.Error($"Failed to play audio with wmplayer: {ex2.Message}");
+                                MessageBox.Show($"Could not play audio file. Please ensure you have an audio player installed.\n\nFile: {audioPath}", 
+                                    "Audio Playback Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show($"Audio file not found: {audioPath}", "File Not Found", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                }
+            };
+            
+            playButton.Click += new RoutedEventHandler(playAudio);
+            voiceContainer.MouseLeftButtonUp += (s, e) => playAudio(s, new RoutedEventArgs());
+
+            return voiceContainer;
         }
 
         private UIElement CreateStickerElement(TelegramMessage message)
@@ -1689,7 +1774,7 @@ namespace TelegramChatViewer
 
             var fileNameText = new TextBlock
             {
-                Text = Path.GetFileName(message.File),
+                Text = !string.IsNullOrEmpty(message.File) ? Path.GetFileName(message.File) : "Sticker file",
                 FontSize = 10,
                 Foreground = GetCachedResource("SecondaryText"),
                 FontStyle = FontStyles.Italic
@@ -1707,12 +1792,82 @@ namespace TelegramChatViewer
 
         private UIElement CreateAnimationElement(TelegramMessage message)
         {
+            var animationContainer = new StackPanel();
+            
+            // Get the animation path
+            string animationPath = !string.IsNullOrEmpty(message.File) ? message.File : "";
+            
+            if (!string.IsNullOrEmpty(animationPath))
+            {
+                // Build full path relative to JSON file directory
+                string fullPath = Path.IsPathRooted(animationPath) ? animationPath : Path.Combine(_jsonFileDirectory, animationPath);
+                
+                if (File.Exists(fullPath))
+                {
+                    try
+                    {
+                        // Try to display as animated image (WPF supports GIF animation)
+                        var image = new Image
+                        {
+                            Source = new BitmapImage(new Uri(fullPath, UriKind.Absolute)),
+                            MaxWidth = 350,
+                            MaxHeight = 250,
+                            Stretch = Stretch.Uniform,
+                            Margin = new Thickness(0, 0, 0, 5)
+                        };
+                        
+                        // Add border for better visual appearance
+                        var imageBorder = new Border
+                        {
+                            Child = image,
+                            CornerRadius = new CornerRadius(8),
+                            BorderBrush = GetCachedResource("SecondaryText"),
+                            BorderThickness = new Thickness(1),
+                            Margin = new Thickness(0, 0, 0, 5)
+                        };
+                        
+                        // Add click handler to open in external viewer
+                        imageBorder.MouseLeftButtonUp += (s, e) => 
+                        {
+                            try
+                            {
+                                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(fullPath) { UseShellExecute = true });
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.Error($"Failed to open animation: {ex.Message}");
+                            }
+                        };
+                        imageBorder.Cursor = Cursors.Hand;
+                        
+                        animationContainer.Children.Add(imageBorder);
+                        
+                        // Add animation info below
+                        var infoText = new TextBlock
+                        {
+                            Text = $"🎞️ {GetMediaDetailsText(message)}",
+                            FontSize = 10,
+                            Foreground = GetCachedResource("SecondaryText"),
+                            FontStyle = FontStyles.Italic,
+                            HorizontalAlignment = HorizontalAlignment.Center
+                        };
+                        animationContainer.Children.Add(infoText);
+                        
+                        return animationContainer;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error($"Failed to load animation {fullPath}: {ex.Message}");
+                    }
+                }
+            }
+            
+            // Fallback to simple info panel if animation can't be loaded
             var animationPanel = new StackPanel
             {
                 Orientation = Orientation.Horizontal
             };
 
-            // Animation icon
             var animationIcon = new TextBlock
             {
                 Text = "🎞️",
@@ -1721,12 +1876,11 @@ namespace TelegramChatViewer
                 Margin = new Thickness(0, 0, 8, 0)
             };
 
-            // Animation info
             var animationInfo = new StackPanel();
             
             var titleText = new TextBlock
             {
-                Text = "GIF Animation",
+                Text = "GIF Animation (not found)",
                 FontWeight = FontWeights.SemiBold,
                 FontSize = 12,
                 Foreground = GetCachedResource("PrimaryText")
@@ -1741,7 +1895,7 @@ namespace TelegramChatViewer
 
             var fileNameText = new TextBlock
             {
-                Text = Path.GetFileName(message.File),
+                Text = !string.IsNullOrEmpty(message.File) ? Path.GetFileName(message.File) : "Animation file",
                 FontSize = 10,
                 Foreground = GetCachedResource("SecondaryText"),
                 FontStyle = FontStyles.Italic
@@ -1764,13 +1918,16 @@ namespace TelegramChatViewer
                 Orientation = Orientation.Horizontal
             };
 
-            // Video icon
-            var videoIcon = new TextBlock
+            // Video icon with play button look
+            var videoIcon = new Button
             {
-                Text = "📹",
+                Content = "📹▶️",
                 FontSize = 16,
+                Background = Brushes.Transparent,
+                BorderThickness = new Thickness(0),
                 VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(0, 0, 8, 0)
+                Margin = new Thickness(0, 0, 8, 0),
+                Cursor = Cursors.Hand
             };
 
             // Video info
@@ -1793,7 +1950,7 @@ namespace TelegramChatViewer
 
             var fileNameText = new TextBlock
             {
-                Text = Path.GetFileName(message.File),
+                Text = !string.IsNullOrEmpty(message.File) ? Path.GetFileName(message.File) : "Video file",
                 FontSize = 10,
                 Foreground = GetCachedResource("SecondaryText"),
                 FontStyle = FontStyles.Italic
@@ -1806,69 +1963,45 @@ namespace TelegramChatViewer
             videoPanel.Children.Add(videoIcon);
             videoPanel.Children.Add(videoInfo);
 
-            return videoPanel;
-        }
-
-        private UIElement CreatePhotoElement(TelegramMessage message)
-        {
-            var photoPanel = new StackPanel
+            // Add click handler to play video
+            Action playVideo = () => 
             {
-                Orientation = Orientation.Horizontal
+                if (!string.IsNullOrEmpty(message.File))
+                {
+                    string videoPath = Path.IsPathRooted(message.File) ? 
+                        message.File : 
+                        Path.Combine(_jsonFileDirectory, message.File);
+                        
+                    if (File.Exists(videoPath))
+                    {
+                        try
+                        {
+                            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(videoPath) { UseShellExecute = true });
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Error($"Failed to play video: {ex.Message}");
+                            MessageBox.Show($"Could not play video file.\n\nFile: {videoPath}", "Video Playback Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show($"Video file not found: {videoPath}", "File Not Found", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                }
             };
-
-            // Photo icon
-            var photoIcon = new TextBlock
-            {
-                Text = "📷",
-                FontSize = 16,
-                VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(0, 0, 8, 0)
-            };
-
-            // Photo info
-            var photoInfo = new StackPanel();
             
-            var titleText = new TextBlock
-            {
-                Text = "Photo",
-                FontWeight = FontWeights.SemiBold,
-                FontSize = 12,
-                Foreground = GetCachedResource("PrimaryText")
-            };
+            videoIcon.Click += (s, e) => playVideo();
 
-            var dimensionsText = new TextBlock
-            {
-                Text = message.Width.HasValue && message.Height.HasValue ? 
-                    $"{message.Width}x{message.Height}" : "Photo",
-                FontSize = 11,
-                Foreground = GetCachedResource("SecondaryText")
-            };
-
-            var fileNameText = new TextBlock
-            {
-                Text = !string.IsNullOrEmpty(message.Photo) ? 
-                    Path.GetFileName(message.Photo) : 
-                    Path.GetFileName(message.File),
-                FontSize = 10,
-                Foreground = GetCachedResource("SecondaryText"),
-                FontStyle = FontStyles.Italic
-            };
-
-            photoInfo.Children.Add(titleText);
-            photoInfo.Children.Add(dimensionsText);
-            photoInfo.Children.Add(fileNameText);
-
-            photoPanel.Children.Add(photoIcon);
-            photoPanel.Children.Add(photoInfo);
-
-            return photoPanel;
+            return videoPanel;
         }
 
         private UIElement CreateGenericFileElement(TelegramMessage message)
         {
             var filePanel = new StackPanel
             {
-                Orientation = Orientation.Horizontal
+                Orientation = Orientation.Horizontal,
+                Cursor = Cursors.Hand
             };
 
             // File icon
@@ -1901,7 +2034,7 @@ namespace TelegramChatViewer
 
             var fileNameText = new TextBlock
             {
-                Text = Path.GetFileName(message.File),
+                Text = !string.IsNullOrEmpty(message.File) ? Path.GetFileName(message.File) : "File",
                 FontSize = 10,
                 Foreground = GetCachedResource("SecondaryText"),
                 FontStyle = FontStyles.Italic
@@ -1913,6 +2046,34 @@ namespace TelegramChatViewer
 
             filePanel.Children.Add(fileIcon);
             filePanel.Children.Add(fileInfo);
+
+            // Add click handler to open file
+            filePanel.MouseLeftButtonUp += (s, e) => 
+            {
+                if (!string.IsNullOrEmpty(message.File))
+                {
+                    string filePath = Path.IsPathRooted(message.File) ? 
+                        message.File : 
+                        Path.Combine(_jsonFileDirectory, message.File);
+                        
+                    if (File.Exists(filePath))
+                    {
+                        try
+                        {
+                            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(filePath) { UseShellExecute = true });
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Error($"Failed to open file: {ex.Message}");
+                            MessageBox.Show($"Could not open file.\n\nFile: {filePath}", "File Open Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show($"File not found: {filePath}", "File Not Found", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                }
+            };
 
             return filePanel;
         }
@@ -2184,6 +2345,164 @@ namespace TelegramChatViewer
             }
 
             return textBuilder.ToString().Trim();
+        }
+
+        private UIElement CreatePhotoElement(TelegramMessage message)
+        {
+            var photoContainer = new StackPanel();
+            
+            // Get the photo path - either from Photo field or File field
+            string photoPath = !string.IsNullOrEmpty(message.Photo) ? message.Photo : message.File;
+            
+            if (!string.IsNullOrEmpty(photoPath))
+            {
+                // Build full path relative to JSON file directory
+                string fullPath = Path.IsPathRooted(photoPath) ? photoPath : Path.Combine(_jsonFileDirectory, photoPath);
+                
+                if (File.Exists(fullPath))
+                {
+                    try
+                    {
+                        var image = new Image
+                        {
+                            Source = new BitmapImage(new Uri(fullPath, UriKind.Absolute)),
+                            MaxWidth = 400,
+                            MaxHeight = 300,
+                            Stretch = Stretch.Uniform,
+                            Margin = new Thickness(0, 0, 0, 5)
+                        };
+                        
+                        // Add border for better visual appearance
+                        var imageBorder = new Border
+                        {
+                            Child = image,
+                            CornerRadius = new CornerRadius(8),
+                            BorderBrush = GetCachedResource("SecondaryText"),
+                            BorderThickness = new Thickness(1),
+                            Margin = new Thickness(0, 0, 0, 5)
+                        };
+                        
+                        // Add click handler to open in external viewer
+                        imageBorder.MouseLeftButtonUp += (s, e) => 
+                        {
+                            try
+                            {
+                                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(fullPath) { UseShellExecute = true });
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.Error($"Failed to open image: {ex.Message}");
+                            }
+                        };
+                        imageBorder.Cursor = Cursors.Hand;
+                        
+                        photoContainer.Children.Add(imageBorder);
+                        
+                        // Add image info below
+                        var infoText = new TextBlock
+                        {
+                            Text = message.Width.HasValue && message.Height.HasValue ? 
+                                $"📷 {message.Width}x{message.Height}" : "📷 Photo",
+                            FontSize = 10,
+                            Foreground = GetCachedResource("SecondaryText"),
+                            FontStyle = FontStyles.Italic,
+                            HorizontalAlignment = HorizontalAlignment.Center
+                        };
+                        photoContainer.Children.Add(infoText);
+                        
+                        return photoContainer;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error($"Failed to load image {fullPath}: {ex.Message}");
+                    }
+                }
+            }
+            
+            // Fallback to simple info if image can't be loaded
+            var photoPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal
+            };
+
+            var photoIcon = new TextBlock
+            {
+                Text = "📷",
+                FontSize = 16,
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0, 0, 8, 0)
+            };
+
+            var photoInfo = new StackPanel();
+            
+            var titleText = new TextBlock
+            {
+                Text = "Photo (not found)",
+                FontWeight = FontWeights.SemiBold,
+                FontSize = 12,
+                Foreground = GetCachedResource("PrimaryText")
+            };
+
+            var dimensionsText = new TextBlock
+            {
+                Text = message.Width.HasValue && message.Height.HasValue ? 
+                    $"{message.Width}x{message.Height}" : "Photo",
+                FontSize = 11,
+                Foreground = GetCachedResource("SecondaryText")
+            };
+
+            var fileNameText = new TextBlock
+            {
+                Text = !string.IsNullOrEmpty(message.Photo) ? 
+                    Path.GetFileName(message.Photo) : 
+                    Path.GetFileName(message.File),
+                FontSize = 10,
+                Foreground = GetCachedResource("SecondaryText"),
+                FontStyle = FontStyles.Italic
+            };
+
+            photoInfo.Children.Add(titleText);
+            photoInfo.Children.Add(dimensionsText);
+            photoInfo.Children.Add(fileNameText);
+
+            photoPanel.Children.Add(photoIcon);
+            photoPanel.Children.Add(photoInfo);
+            
+            return photoPanel;
+        }
+
+        private bool ShouldShowSenderHeader(TelegramMessage message, int messageIndex)
+        {
+            // Always show header for the first message
+            if (messageIndex == 0 || _currentMessages.Count == 0)
+                return true;
+                
+            // Get the previous message
+            var previousMessage = messageIndex > 0 ? _currentMessages[messageIndex - 1] : null;
+            if (previousMessage == null)
+                return true;
+                
+            // Show header if sender is different from previous message
+            if (message.DisplaySender != previousMessage.DisplaySender)
+                return true;
+                
+            // Show header if there's a significant time gap (more than 5 minutes)
+            var timeDiff = message.ParsedDate - previousMessage.ParsedDate;
+            if (timeDiff.TotalMinutes > 5)
+                return true;
+                
+            // Show header if previous message was a service message
+            if (previousMessage.IsServiceMessage)
+                return true;
+                
+            // Show header if current message is first after date separator
+            var currentDate = message.ParsedDate.Date;
+            var previousDate = previousMessage.ParsedDate.Date;
+            if (currentDate != previousDate)
+                return true;
+                
+            // Don't show header for grouped messages
+            return false;
         }
     }
 } 
