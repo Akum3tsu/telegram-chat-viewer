@@ -5,6 +5,31 @@ All notable changes to the Telegram Chat Viewer project will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 2025-01-28
+
+### ✨ Major Search Enhancements
+- **Complete Search Functionality** - Search now properly highlights and navigates to found messages
+  - **Visual Highlighting**: Found messages now display with bright yellow background and orange glow effect
+  - **Auto-Scrolling**: Search results automatically center in the viewport
+  - **Navigation**: Previous/Next arrows now properly jump between search results
+  - **Smart Loading**: Automatically loads more messages if search target isn't yet rendered (infinite scroll support)
+  - **Visual Feedback**: 5-second highlight duration with automatic fade-out
+  - **Keyboard Support**: F3/Shift+F3, Enter to search, Escape to clear
+
+### 🎯 Enhanced User Experience
+- **Search Result Visibility**: Impossible to miss found messages with bright highlighting
+- **Smooth Navigation**: Seamless jumping between multiple search results
+- **Real-time Feedback**: Visual confirmation of which message matched your search
+- **Intelligent Loading**: Works with both small and large chat files (infinite scroll compatible)
+
+### 🔧 Technical Improvements
+- **Message-to-Element Mapping**: Efficient tracking system for UI elements and their source messages
+- **Dynamic Loading**: Smart loading of additional messages when searching beyond currently rendered content
+- **Memory Management**: Proper cleanup of highlight effects and element mappings
+- **Async Navigation**: Non-blocking search result jumping with proper error handling
+
+---
+
 ## [1.0.2] - 2025-01-28
 
 ### 🐛 Bug Fixes

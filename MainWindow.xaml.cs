@@ -58,6 +58,10 @@ namespace TelegramChatViewer
         private DispatcherTimer _searchTimer;
         private string _currentSearchTerm = "";
         
+        // Search highlighting
+        private readonly Dictionary<TelegramMessage, UIElement> _messageToElementMap = new Dictionary<TelegramMessage, UIElement>();
+        private UIElement _lastHighlightedElement = null;
+        
         // Member colors
         private readonly Dictionary<string, Brush> _memberColors = new Dictionary<string, Brush>();
         
@@ -648,6 +652,13 @@ namespace TelegramChatViewer
             };
 
             serviceContainer.Child = serviceLabel;
+            
+            // Tag the container with the message for search functionality
+            serviceContainer.Tag = message;
+            
+            // Add to message-to-element mapping for search functionality
+            _messageToElementMap[message] = serviceContainer;
+            
             return serviceContainer;
         }
 
@@ -722,6 +733,13 @@ namespace TelegramChatViewer
 
             messageContainer.Children.Add(bubble);
             memberContainer.Children.Add(messageContainer);
+            
+            // Tag the container with the message for search functionality
+            memberContainer.Tag = message;
+            
+            // Add to message-to-element mapping for search functionality
+            _messageToElementMap[message] = memberContainer;
+            
             return memberContainer;
         }
 
@@ -811,11 +829,14 @@ namespace TelegramChatViewer
             _currentSearchTerm = "";
             SearchResultsLabel.Text = "";
             
+            // Clear any existing highlights
+            ClearSearchHighlight();
+            
             PrevSearchButton.Visibility = Visibility.Collapsed;
             NextSearchButton.Visibility = Visibility.Collapsed;
         }
 
-        private void JumpToSearchResult(int resultIndex)
+        private async void JumpToSearchResult(int resultIndex)
         {
             if (!_searchResults.Any() || resultIndex >= _searchResults.Count)
                 return;
@@ -827,7 +848,30 @@ namespace TelegramChatViewer
             {
                 SearchResultsLabel.Text = $"Result {resultIndex + 1} of {_searchResults.Count}";
                 UpdateSearchNavigationButtons();
-                _logger.Info($"Jumping to search result {resultIndex + 1}: message {messageIndex}");
+                
+                // Clear previous highlight
+                ClearSearchHighlight();
+                
+                // Find the UI element for this message
+                var messageElement = FindMessageElement(result, messageIndex);
+                if (messageElement != null)
+                {
+                    // Scroll to the message
+                    ScrollToElement(messageElement);
+                    
+                    // Highlight the message
+                    HighlightElement(messageElement);
+                    
+                    _logger.Info($"Jumped to search result {resultIndex + 1}: message {messageIndex}");
+                }
+                else
+                {
+                    _logger.Warning($"Could not find UI element for message {messageIndex}");
+                    
+                    // If we can't find the element, it might be in a part that hasn't been loaded yet
+                    // Try to ensure the message is loaded and rendered
+                    await EnsureMessageIsLoaded(messageIndex);
+                }
             }
         }
 
@@ -835,6 +879,184 @@ namespace TelegramChatViewer
         {
             PrevSearchButton.IsEnabled = _currentSearchIndex > 0;
             NextSearchButton.IsEnabled = _currentSearchIndex < _searchResults.Count - 1;
+        }
+
+        private void ClearSearchHighlight()
+        {
+            if (_lastHighlightedElement != null)
+            {
+                try
+                {
+                    // Remove the highlight effect
+                    _lastHighlightedElement.Effect = null;
+                    
+                    // Restore original background
+                    if (_lastHighlightedElement is Border border)
+                    {
+                        border.Background = Brushes.Transparent;
+                    }
+                    else if (_lastHighlightedElement is StackPanel panel)
+                    {
+                        panel.Background = Brushes.Transparent;
+                    }
+                    
+                    _logger.Info("Cleared search highlight");
+                }
+                catch (Exception ex)
+                {
+                    _logger.Warning($"Failed to clear highlight: {ex.Message}");
+                }
+                finally
+                {
+                    _lastHighlightedElement = null;
+                }
+            }
+        }
+
+        private UIElement FindMessageElement(TelegramMessage message, int messageIndex)
+        {
+            // Try to find the element from our mapping first
+            if (_messageToElementMap.TryGetValue(message, out var element))
+            {
+                return element;
+            }
+
+            // If not in mapping, try to find it by iterating through the visual tree
+            // This is a fallback method - look for the message in MessagesContainer
+            for (int i = 0; i < MessagesContainer.Children.Count; i++)
+            {
+                var child = MessagesContainer.Children[i];
+                if (child is FrameworkElement fe && fe.Tag != null && fe.Tag.Equals(message))
+                {
+                    return child;
+                }
+            }
+
+            return null;
+        }
+
+        private void ScrollToElement(UIElement element)
+        {
+            if (element == null) return;
+
+            try
+            {
+                // Get the position of the element within the ScrollViewer
+                var transform = element.TransformToAncestor(ChatScrollViewer);
+                var position = transform.Transform(new Point(0, 0));
+
+                // Scroll to show the element in the center of the view
+                var scrollPosition = position.Y - (ChatScrollViewer.ViewportHeight / 2);
+                
+                // Ensure we don't scroll beyond the bounds
+                scrollPosition = Math.Max(0, Math.Min(scrollPosition, ChatScrollViewer.ScrollableHeight));
+                
+                ChatScrollViewer.ScrollToVerticalOffset(scrollPosition);
+            }
+            catch (Exception ex)
+            {
+                _logger.Warning($"Failed to scroll to element: {ex.Message}");
+            }
+        }
+
+        private void HighlightElement(UIElement element)
+        {
+            if (element == null) return;
+
+            try
+            {
+                // Store original background if it's a Border or StackPanel
+                SolidColorBrush originalBackground = null;
+                if (element is Border border)
+                {
+                    originalBackground = border.Background as SolidColorBrush;
+                    // Create a very visible highlight background
+                    border.Background = new SolidColorBrush(Color.FromArgb(150, 255, 255, 0)); // Semi-transparent bright yellow
+                }
+                else if (element is StackPanel panel)
+                {
+                    originalBackground = panel.Background as SolidColorBrush;
+                    panel.Background = new SolidColorBrush(Color.FromArgb(150, 255, 255, 0)); // Semi-transparent bright yellow
+                }
+
+                // Also add a strong glow effect
+                var highlightEffect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = Colors.Orange,
+                    BlurRadius = 20,
+                    ShadowDepth = 0,
+                    Opacity = 1.0
+                };
+
+                element.Effect = highlightEffect;
+                _lastHighlightedElement = element;
+
+                // Store original background in a separate dictionary for restoration
+                if (element is FrameworkElement fe)
+                {
+                    fe.Tag = fe.Tag; // Keep existing tag
+                }
+
+                // Remove highlight after 5 seconds (longer duration)
+                var highlightTimer = new DispatcherTimer
+                {
+                    Interval = TimeSpan.FromSeconds(5)
+                };
+                highlightTimer.Tick += (s, e) =>
+                {
+                    highlightTimer.Stop();
+                    if (_lastHighlightedElement == element)
+                    {
+                        ClearSearchHighlight();
+                    }
+                };
+                highlightTimer.Start();
+
+                _logger.Info("Applied search highlight to message element");
+            }
+            catch (Exception ex)
+            {
+                _logger.Warning($"Failed to highlight element: {ex.Message}");
+            }
+        }
+
+        private async Task EnsureMessageIsLoaded(int messageIndex)
+        {
+            // If infinite scroll is enabled and the message is not loaded, we need to load more messages
+            if (_infiniteScrollEnabled && messageIndex >= _currentMessages.Count)
+            {
+                _logger.Info($"Message {messageIndex} not loaded, attempting to load more messages");
+                
+                // Calculate how many messages we need to load to reach this message
+                var targetLoadSize = messageIndex + 100; // Load a bit extra for buffer
+                targetLoadSize = Math.Min(targetLoadSize, _allMessages.Count);
+                
+                if (targetLoadSize > _currentMessages.Count)
+                {
+                    ShowLoadingUI(true, "Loading messages to reach search result...");
+                    
+                    // Load messages up to the target
+                    _currentMessages = _allMessages.Take(targetLoadSize).ToList();
+                    
+                    // Re-render messages
+                    await RenderBasicMessagesOptimized();
+                    
+                    // Update status
+                    StatusLabel.Text = $"{_chatName} • {_currentMessages.Count:N0}/{_allMessages.Count:N0} messages";
+                    
+                    ShowLoadingUI(false);
+                    
+                    // Try to find the message again
+                    var result = _searchResults[_currentSearchIndex];
+                    var messageElement = FindMessageElement(result, messageIndex);
+                    if (messageElement != null)
+                    {
+                        ScrollToElement(messageElement);
+                        HighlightElement(messageElement);
+                        _logger.Info($"Successfully loaded and jumped to message {messageIndex}");
+                    }
+                }
+            }
         }
 
         private async Task LoadChatFile(string filePath)
@@ -931,6 +1153,7 @@ namespace TelegramChatViewer
         private async Task RenderBasicMessages()
         {
             MessagesContainer.Children.Clear();
+            _messageToElementMap.Clear(); // Clear message-to-element mapping
             ResetAlternatingLayoutState();
 
             var currentDate = DateTime.MinValue;
@@ -969,6 +1192,7 @@ namespace TelegramChatViewer
         private async Task RenderBasicMessagesOptimized()
         {
             MessagesContainer.Children.Clear();
+            _messageToElementMap.Clear(); // Clear message-to-element mapping
             ResetAlternatingLayoutState();
             
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
@@ -1080,6 +1304,13 @@ namespace TelegramChatViewer
             };
 
             serviceContainer.Child = serviceLabel;
+            
+            // Tag the container with the message for search functionality
+            serviceContainer.Tag = message;
+            
+            // Add to message-to-element mapping for search functionality
+            _messageToElementMap[message] = serviceContainer;
+            
             MessagesContainer.Children.Add(serviceContainer);
         }
 
@@ -1154,6 +1385,13 @@ namespace TelegramChatViewer
 
             messageContainer.Children.Add(bubble);
             memberContainer.Children.Add(messageContainer);
+            
+            // Tag the container with the message for search functionality
+            memberContainer.Tag = message;
+            
+            // Add to message-to-element mapping for search functionality
+            _messageToElementMap[message] = memberContainer;
+            
             MessagesContainer.Children.Add(memberContainer);
         }
 
